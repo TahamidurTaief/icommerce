@@ -7,7 +7,7 @@ const AllCategoryComponents = ({ id, title, icon, isSelected, onClick }) => {
         <div>
             <button 
                 onClick={onClick}
-                className={`group w-full ${isSelected ? 'bg-sky-500 text-white' : 'border border-blue-500 text-white hover:border-blue-500 hover:bg-sky-500'} rounded-full transition-colors duration-200`}
+                className={`group w-full ${isSelected ? 'bg-blue-500 text-white' : 'border border-blue-500 text-white hover:border-blue-500 hover:bg-blue-500'} rounded-full transition-colors duration-200`}
             >
                 <div className="flex flex-row gap-2 items-center px-1 py-1">
                     <div className="relative rounded-full aspect-square h-7 w-7 overflow-hidden">
