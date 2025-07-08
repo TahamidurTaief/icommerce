@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* --- LIGHT MODE COLORS --- */
+  --color-background: #f9fafb;
+  --color-second-bg: #ffffff;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #4b5563;
+  --color-button-primary: #2563eb;
+  --color-accent-orange: #f59e0b;
+  --color-accent-green: #16a34a;
+  --color-border: #e5e7eb;
+
+  /* Additional variables for clarity */
+  --color-surface: #ffffff; /* For elements that pop, like cards or menus */
+  --color-muted-bg: #e5e7eb; /* For subtle backgrounds like input fields or icons */
+}
+
+html.dark {
+  /* --- DARK MODE COLORS (these override the root values when .dark is active) --- */
+  --color-background: #1f2937;
+  --color-second-bg: #313c48;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-button-primary: #3b82f6;
+  --color-accent-orange: #f59e0b;
+  --color-accent-green: #10b981;
+  --color-border: #374151;
+
+  /* Additional variables for clarity */
+  --color-surface: #111827; /* A darker surface for dark mode */
+  --color-muted-bg: #374151;
+}
+
+
+
+
+/* 
+  =============================================================
+  GLOBAL STYLES & FONT SETUP
+  =============================================================
+*/
+
+/* Apply the base theme colors to the whole app */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  width: 100%;
+}
+
+/* Keep your font family definitions */
+.poppins {
+  font-family: var(--font-poppins);
+}
+.lato {
+  font-family: var(--font-lato);
+}
+.raleway {
+  font-family: var(--font-raleway);
+}
+
+            
+
+            
+
+/* Custom container style
+@layer components {
+  .container {
+    @apply w-full mx-auto;
+  }
+} */
+
+.container{
+  width:90%;
+  margin: 0 auto;
+}
+
+  @media (min-width: 640px) {
+    .container {
+      max-width: 640px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .container {
+      max-width: 768px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      max-width: 1024px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container {
+      max-width: 1280px;
+    }
+}
+
+  @media (min-width: 1536px) {
+    .container {
+      max-width: 1536px;
+    }
+  }
+
+
+
+/* 
+  =============================================================
+  THEME TOGGLE ANIMATION (from previous steps)
+  =============================================================
+*/
+.theme-toggle-sun,
+.theme-toggle-moon {
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+.theme-toggle-moon {
+  position: absolute;
+}
+/* Light mode styles */
+.theme-toggle-sun {
+  transform: rotate(0) scale(1);
+  opacity: 1;
+}
+.theme-toggle-moon {
+  transform: rotate(-90deg) scale(0);
+  opacity: 0;
+}
+/* Dark mode styles */
+html.dark .theme-toggle-sun {
+  transform: rotate(90deg) scale(0);
+  opacity: 0;
+}
+html.dark .theme-toggle-moon {
+  transform: rotate(0) scale(1);
+  opacity: 1;
+}
+
+.poppins {
+  font-family: var(--font-poppins);
+}
+
+.lato {
+  font-family: var(--font-lato);
+}
+
+.raleway {
+  font-family: var(--font-raleway);
+}
+
+
+
+
+
+
+
+
+
+
+/* === ADD THIS FOR THEME TOGGLE ANIMATION === */
+.theme-toggle-sun,
+.theme-toggle-moon {
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+.theme-toggle-moon {
+  position: absolute;
+}
+/* Light mode styles */
+.theme-toggle-sun {
+  transform: rotate(0) scale(1);
+  opacity: 1;
+}
+.theme-toggle-moon {
+  transform: rotate(-90deg) scale(0);
+  opacity: 0;
+}
+/* Dark mode styles */
+.dark .theme-toggle-sun {
+  transform: rotate(90deg) scale(0);
+  opacity: 0;
+}
+.dark .theme-toggle-moon {
+  transform: rotate(0) scale(1);
+  opacity: 1;
+}
