@@ -16,6 +16,7 @@
     "react-icon": "^1.0.0",
     "react-icons": "^5.5.0",
     "swapper": "^1.1.6",
+    "swiper": "^11.2.10",
     "yarn": "^1.22.22"
   },
   "devDependencies": {

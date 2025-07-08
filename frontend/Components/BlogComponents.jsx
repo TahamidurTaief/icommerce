@@ -19,7 +19,7 @@ const BlogComponents = ({ blog_data }) => {
             <span className="text-xs text-[var(--color-text-secondary)]">
               {blog_data.date}
             </span>
-            <h2 className="text-sm md:text-lg font-semibold text-[var(--color-text-primary)]">
+            <h2 className="text-sm md:text-md font-semibold text-[var(--color-text-primary)] truncate">
               {blog_data.title}
             </h2>
           </div>
