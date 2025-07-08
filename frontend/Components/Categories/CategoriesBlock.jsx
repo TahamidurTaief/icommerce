@@ -395,10 +395,10 @@ const CategoriesBlock = () => {
     };
 
     return (
-        <div className="container w-full mx-auto pt-5 md:pt-0 py-10 md:py-20">
+        <div className="container w-full mx-auto pt-5 md:pt-5 py-10 md:py-20">
             {/* Top Categories Section */}
             <section className="mb-12">
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">
+                <h2 className="text-2xl md:text-2xl lg:text-3xl font-bold mb-6">
                     Top <span className="text-sky-500">Categories</span>
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
@@ -417,7 +417,7 @@ const CategoriesBlock = () => {
 
             {/* All Categories Section */}
             <section className="mb-12">
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">
+                <h2 className="text-2xl md:text-2xl xl:text-3xl font-bold mb-6">
                     All <span className="text-sky-500">Categories</span>
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
@@ -436,7 +436,7 @@ const CategoriesBlock = () => {
 
             {/* Products Section */}
             <section>
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">
+                <h2 className="text-2xl md:text-2xl lg:text-3xl font-bold mb-6">
                     {selectedCategory ? (
                         <>
                             Filtered <span className="text-sky-500">Products</span>
