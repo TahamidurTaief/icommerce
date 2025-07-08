@@ -310,7 +310,7 @@ const Navbar = () => {
 
       {/* Mobile Navbar */}
       <div
-        className="md:hidden fixed top-0 left-0 right-0 z-50 px-4 py-2"
+        className="md:hidden sticky top-0 left-0 right-0 z-50 px-4 py-2"
         style={{
           backgroundColor: "var(--color-surface)",
           borderBottom: "1px solid var(--color-border)",

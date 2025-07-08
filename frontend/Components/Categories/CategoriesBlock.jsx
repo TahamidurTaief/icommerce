@@ -395,7 +395,7 @@ const CategoriesBlock = () => {
     };
 
     return (
-        <div className="container w-full mx-auto pt-0 py-10 md:py-20">
+        <div className="container w-full mx-auto pt-5 md:pt-0 py-10 md:py-20">
             {/* Top Categories Section */}
             <section className="mb-12">
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">
@@ -456,7 +456,7 @@ const CategoriesBlock = () => {
                         </>
                     )}
                 </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-4 md:gap-6">
                     {filteredProducts.map((product) => (
                         <ProductCard key={product.sku} productData={product} />
                     ))}
