@@ -1,8 +1,8 @@
 // app/layout.js
-import Navbar from "@/Components/Navbar";
+import Navbar from "@/app/Components/Navbar";
 import "./globals.css";
 import { Poppins, Lato, Raleway } from "next/font/google";
-import { ThemeProvider } from "@/Components/ThemeProvider";
+import { ThemeProvider } from "@/app/Components/ThemeProvider";
 
 const poppins = Poppins({
   subsets: ["latin"],
