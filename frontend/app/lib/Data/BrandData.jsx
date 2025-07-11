@@ -85,7 +85,5 @@ export const BrandData = [
     description:
       "Uniqlo is a Japanese casual wear designer, manufacturer, and retailer.",
     website: "https://www.uniqlo.com",
-  },
+  }
 ];
-
-export default BrandData;

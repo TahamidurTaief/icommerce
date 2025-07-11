@@ -10,7 +10,7 @@ import girls_bag from "@/public/img/Home/Caregory/girls-bag.jpeg";
 import girls_fashion from "@/public/img/Home/Caregory/girs-fashion-dress.jpeg";
 import cosmatic from "@/public/img/Home/Caregory/cosmatic.jpg";
 import CategoryCard from "../Common/CategoryCard";
-import AllCategoryComponents from "./AllCategoryComponents";
+import AllCategoryComponents from "../Common/AllCategoryComponents";
 import ProductCard from "../Common/ProductCard";
 
 const CategoriesBlock = () => {
