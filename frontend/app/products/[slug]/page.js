@@ -1,38 +1,41 @@
-"use client";
+// app/products/[slug]/page.js
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import ProductDetailPageClient from "@/app/Components/Product/ProductDetailPageClient";
+import { ProductsData } from "@/app/lib/Data/ProductsData";
+import { notFound } from "next/navigation";
 
-export default function ProductDetailPage() {
-  const { slug } = useParams();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// Helper function to fetch product (Server Side)
+async function getProduct(slug) {
+  const product = ProductsData.find((p) => p.slug === slug);
+  return product || null;
+}
 
-  useEffect(() => {
-    async function fetchProduct() {
-      try {
-        const res = await fetch(`/api/products/${slug}`);
-        if (!res.ok) throw new Error("Product not found");
-        const data = await res.json();
-        setProduct(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
+// Utility to serialize imported images for client components
+const serializeProduct = (prod) => {
+  if (!prod) return null;
+  return {
+    ...prod,
+    // Ensure image paths are strings for client side consumption
+    imageUrl: prod.imageUrl?.src ? prod.imageUrl.src : prod.imageUrl,
+    additionalImages:
+      prod.additionalImages?.map((img) => (img.src ? img.src : img)) || [],
+  };
+};
 
-    fetchProduct();
-  }, [slug]);
+export default async function ProductDetailPage({ params }) {
+  const { slug } = params;
+  const product = await getProduct(slug);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (!product) {
+    notFound(); // Show 404 if product not found
+  }
+
+  const serializedProduct = serializeProduct(product);
 
   return (
-    <div className="product-detail">
-      <h1>{product.name}</h1>
-      {/* Rest of your product details */}
+    // Modern UI layout using max-w-screen-xl
+    <div className="container mx-auto px-4 py-8 md:py-12 bg-[var(--color-background)] text-foreground min-h-[calc(100vh-126px)] overflow-auto">
+      <ProductDetailPageClient product={serializedProduct} />
     </div>
   );
 }
