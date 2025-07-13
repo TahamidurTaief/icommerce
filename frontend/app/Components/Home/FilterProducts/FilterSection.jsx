@@ -109,10 +109,11 @@ const FilterSection = ({ onFilterChange }) => {
     <>
       <section className="container mx-auto pt-8 md:pb-4">
         <div className="flex bg-white dark:bg-gray-950 shadow-md py-4 px-5 rounded-lg flex-row md:flex-row justify-between items-start md:items-center align-center gap-6 mb-8">
-          <h2 className="text-xl md:text-xl lg:text-3xl xl:text-4xl font-bold text-[var(--color-text-primary)] w-full md:w-1/3">
-            Explore <span className="text-sky-500">Products</span>
-          </h2>
-
+          <Link href="/products" className="w-full">
+            <h2 className="text-xl md:text-xl lg:text-3xl xl:text-4xl font-bold text-[var(--color-text-primary)] w-full">
+              Explore <span className="text-sky-500">Products</span>
+            </h2>
+          </Link>
           <div className="justify-end flex md:hidden">
             <button
               onClick={toggleModal}
@@ -122,7 +123,6 @@ const FilterSection = ({ onFilterChange }) => {
               <VscSettings className="text-2xl text-[var(--color-text-primary)]" />
             </button>
           </div>
-
           {/* Filter Controls Panel */}
           <div className="w-full hidden md:flex">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -155,7 +155,7 @@ const FilterSection = ({ onFilterChange }) => {
               </div>
 
               {/* Price Range Filter */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 w-full">
                 <div className="relative h-12 bg-slate-50 dark:bg-slate-800 px-2 py-5 border border-slate-300 dark:border-slate-600 rounded-lg flex items-center">
                   <div className="relative w-full h-1.5 mt-4 bg-slate-200 dark:bg-slate-600 rounded-full">
                     <div
@@ -221,6 +221,15 @@ const FilterSection = ({ onFilterChange }) => {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="flex w-52">
+            <Link
+              href="/products"
+              className="text-blue-500 lato hover:text-blue-400 duration-200 w-full text-md underline"
+            >
+              All Products
+            </Link>
           </div>
         </div>
       </section>
