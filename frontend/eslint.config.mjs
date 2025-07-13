@@ -9,6 +9,14 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-const eslintConfig = [...compat.extends("next/core-web-vitals")];
+// Load the base config
+const baseConfig = compat.extends("next/core-web-vitals");
+
+// Filter out TS-related config
+const eslintConfig = baseConfig.filter(
+  (config) =>
+    !config.files?.some((f) => f.endsWith(".ts") || f.endsWith(".tsx")) &&
+    config.parser !== "@typescript-eslint/parser"
+);
 
 export default eslintConfig;
