@@ -60,7 +60,7 @@ export default function PaymentDetails({
           className="w-24 p-2 border border-border rounded-lg bg-input text-foreground focus:ring-2 focus:ring-ring"
         />
       </div>
-      <h3 className="mb-5 text-md font-medium text-foreground">
+      <h3 className="mb-1 text-md font-medium text-foreground">
         Choose Shipping Method:
       </h3>
       {/* UPDATED: Changed from grid to flex for better responsiveness */}
@@ -109,7 +109,7 @@ export default function PaymentDetails({
         </li>
       </ul>
       <div className="mt-6 mb-4">
-        <h3 className="font-semibold text-lg text-foreground mb-3">
+        <h3 className="font-semibold text-lg text-foreground mb-1">
           Apply Coupon:
         </h3>
         {/* UPDATED: Flex container stacks on small screens to prevent overflow */}
@@ -184,7 +184,7 @@ export default function PaymentDetails({
           <h2 className="lato text-lg font-bold">${total.toFixed(2)}</h2>
         </div>
         <div className="pt-3">
-          <div className="flex flex-col justify-between w-full gap-4">
+          <div className="flex flex-row justify-between w-full gap-4">
             <button
               onClick={handleAddToCart}
               disabled={!product.inStock}

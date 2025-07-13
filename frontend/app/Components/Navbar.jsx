@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useTheme } from "next-themes";
 import { CiSearch, CiShop, CiUser, CiShoppingCart } from "react-icons/ci";
 import { IoBagCheckOutline, IoSettingsOutline } from "react-icons/io5";
@@ -10,6 +11,8 @@ import { IoIosArrowDown, IoMdMenu, IoMdHelp } from "react-icons/io";
 import { FiMessageSquare } from "react-icons/fi";
 import { MdAddCall } from "react-icons/md";
 import { BsSun, BsMoon } from "react-icons/bs";
+
+import logo from "@/public/img/icommerce.png";
 
 const categories = [
   "Bundle Deals",
@@ -139,12 +142,13 @@ const Navbar = () => {
         >
           <div className="container flex justify-between items-center pt-1">
             <div className="flex items-center gap-4 w-full">
-              <h1
-                className="raleway text-[22px] font-semibold"
-                style={{ color: "var(--color-text-primary)" }}
-              >
-                Issl Commerce
-              </h1>
+              <Link href="/">
+                <Image
+                  src={logo}
+                  alt="iCommerce"
+                  className="h-full max-h-20 dark:max-h-16 w-auto dark:bg-white rounded-full px-3"
+                />
+              </Link>
             </div>
 
             <div
@@ -317,12 +321,14 @@ const Navbar = () => {
         }}
       >
         <div className="flex items-center gap-3">
-          <h1
-            className="poppins font-semibold text-2xl"
-            style={{ color: "var(--color-accent-green)" }}
-          >
-            Issl
-          </h1>
+          <Link href="/">          
+            <Image
+              src={logo}
+              alt="iCommerce"
+              className="h-full max-h-12 dark:max-h-10 w-auto dark:bg-white rounded-full px-3"
+            />
+          </Link>
+
           <div
             className="flex items-center w-full px-3 rounded-lg"
             style={{ backgroundColor: "var(--color-muted-bg)" }}
