@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 import baby_fashion from "@/public/img/Home/Caregory/baby-fashion.jpg";
 
@@ -71,6 +74,31 @@ const CategoryCards = () => {
     },
   ];
 
+  // Animation variants for the container to orchestrate staggered children animations
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1, // Stagger effect for each card
+      },
+    },
+  };
+
+  // Animation variants for each individual card
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 12,
+      },
+    },
+  };
+
   return (
     <section className="container mx-auto py-8">
       <div className="flex flex-row justify-between items-center">
@@ -86,19 +114,33 @@ const CategoryCards = () => {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 md:mt-5 xl:mt-7">
+      <motion.div
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 md:mt-5 xl:mt-7"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }} // Animate when 20% of the grid is visible, and only once
+      >
         {categories.map((category) => (
-          <div
+          <motion.div
             key={category.id}
-            className="flex flex-col gap-3 justify-between w-full bg-gray-200 dark:bg-[var(--color-second-bg)] px-3 py-5 rounded-lg hover:shadow-md transition-shadow duration-300"
+            className="flex flex-col gap-3 justify-between w-full bg-gray-200 dark:bg-[var(--color-second-bg)] px-3 py-5 rounded-lg cursor-pointer"
+            variants={itemVariants}
+            whileHover={{
+              scale: 1.03,
+              transition: { type: "spring", stiffness: 300 },
+            }}
+            whileTap={{ scale: 0.98 }}
           >
             <div className="flex flex-col sm:flex-row gap-2 w-full">
               <div className="flex flex-col gap-2 w-full">
                 <div className="gap-1">
                   <h3 className="text-lg">{category.type}</h3>
-                  <h1 className="text-2xl font-bold">
-                    {category.name.split(" ")[0]}
-                  </h1>
+                  <Link href="/products">
+                    <h1 className="text-2xl font-bold">
+                      {category.name.split(" ")[0]}
+                    </h1>
+                  </Link>
                 </div>
                 <p className="text-lg">Items ({category.itemCount})</p>
               </div>
@@ -132,9 +174,9 @@ const CategoryCards = () => {
                 height={80}
               />
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 };
