@@ -8,6 +8,7 @@ import { useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import SuccessModal from "./SuccessModal"; // UPDATED: Import the modal
 
 const ProductCard = ({ productData }) => {
   const colors = productData?.colors || [];
@@ -30,10 +31,11 @@ const ProductCard = ({ productData }) => {
   const [selectedImage, setSelectedImage] = useState(productData?.imageUrl);
   const cardRef = useRef(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [isSuccessModalOpen, setSuccessModalOpen] = useState(false); // UPDATED: Modal state
 
-  // Generate proper product URL
   const productUrl = `/products/${productData?.slug}`;
 
+  // UPDATED: handleAddToCart function now saves to localStorage and opens modal
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -46,10 +48,35 @@ const ProductCard = ({ productData }) => {
       return;
     }
 
-    toast.success(`${productData?.name} added to cart!`, {
-      position: "bottom-right",
-      autoClose: 2000,
-    });
+    const itemToAdd = {
+      id: `${productData.slug}-${selectedColor || "default"}-${
+        selectedSize || "default"
+      }`,
+      slug: productData.slug,
+      name: productData.name,
+      price: productData.price,
+      imageUrl: productData.imageUrl,
+      quantity: 1, // Default quantity is 1 from product card
+      selectedColor: selectedColor,
+      selectedSize: selectedSize,
+    };
+
+    const existingCartItems = JSON.parse(
+      localStorage.getItem("cartItems") || "[]"
+    );
+
+    const existingItemIndex = existingCartItems.findIndex(
+      (item) => item.id === itemToAdd.id
+    );
+
+    if (existingItemIndex > -1) {
+      existingCartItems[existingItemIndex].quantity += 1;
+    } else {
+      existingCartItems.push(itemToAdd);
+    }
+    localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
+
+    setSuccessModalOpen(true);
   };
 
   const handleAddToWishlist = (e) => {
@@ -71,7 +98,6 @@ const ProductCard = ({ productData }) => {
   const handleQuickView = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
     setQuickViewOpen(true);
     document.body.style.overflow = "hidden";
   };
@@ -88,10 +114,8 @@ const ProductCard = ({ productData }) => {
       const centerY = rect.top + rect.height / 2;
       const mouseX = e.clientX - centerX;
       const mouseY = e.clientY - centerY;
-
       const rotateX = mouseY / 20;
       const rotateY = -mouseX / 20;
-
       setRotation({ x: rotateX, y: rotateY });
     }
   };
@@ -111,7 +135,6 @@ const ProductCard = ({ productData }) => {
     hover: {},
   };
 
-  // Animation variants for the modal
   const backdropVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
@@ -150,21 +173,18 @@ const ProductCard = ({ productData }) => {
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
-          {/* Discount Badge */}
           {discount > 0 && (
             <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10 shadow-md">
               -{discount}%
             </span>
           )}
 
-          {/* Stock Status Badge */}
           {!productData?.inStock && (
             <span className="absolute top-3 right-3 bg-gray-600 text-white text-xs font-bold px-2 py-1 rounded-full z-10 shadow-md">
               Out of Stock
             </span>
           )}
 
-          {/* Product Image */}
           <div className="relative aspect-square overflow-hidden rounded-lg mb-3">
             <Image
               src={productData?.imageUrl}
@@ -175,7 +195,6 @@ const ProductCard = ({ productData }) => {
               priority={false}
             />
 
-            {/* Quick Actions - Only visible on hover */}
             <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-xs">
               <motion.button
                 onClick={handleQuickView}
@@ -197,7 +216,6 @@ const ProductCard = ({ productData }) => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                {/* Animate the heart icon on toggle */}
                 <motion.div
                   key={isWishlisted ? "filled" : "empty"}
                   initial={{ scale: 0.8 }}
@@ -224,7 +242,6 @@ const ProductCard = ({ productData }) => {
             </div>
           </div>
 
-          {/* Product Info */}
           <div className="flex-grow">
             <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               {productData?.category}
@@ -233,7 +250,6 @@ const ProductCard = ({ productData }) => {
               {productData?.name}
             </h3>
 
-            {/* Price */}
             <div className="flex items-center gap-2 mt-auto">
               <span className="text-lg font-bold text-gray-900 dark:text-white">
                 ${price?.toFixed(2)}
@@ -245,7 +261,6 @@ const ProductCard = ({ productData }) => {
               )}
             </div>
 
-            {/* Colors */}
             {colors?.length > 0 && (
               <div className="flex gap-2 mt-3">
                 {colors.map((color) => (
@@ -272,7 +287,6 @@ const ProductCard = ({ productData }) => {
               </div>
             )}
 
-            {/* Sizes */}
             {sizes?.length > 0 && (
               <div className="flex gap-2 mt-3 flex-wrap">
                 {sizes.map((size) => (
@@ -299,7 +313,12 @@ const ProductCard = ({ productData }) => {
         </motion.div>
       </Link>
 
-      {/* Quick View Modal */}
+      {/* UPDATED: Render the Success Modal */}
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setSuccessModalOpen(false)}
+      />
+
       <AnimatePresence>
         {quickViewOpen && (
           <motion.div
@@ -308,7 +327,7 @@ const ProductCard = ({ productData }) => {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            onClick={closeQuickView} // Close when clicking the backdrop
+            onClick={closeQuickView}
           >
             <motion.div
               className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
@@ -316,7 +335,7 @@ const ProductCard = ({ productData }) => {
               initial="hidden"
               animate="visible"
               exit="exit"
-              onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
+              onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={closeQuickView}
@@ -327,7 +346,6 @@ const ProductCard = ({ productData }) => {
               </button>
 
               <div className="grid md:grid-cols-2 gap-6 p-6">
-                {/* Product Images */}
                 <div>
                   <div className="relative aspect-square mb-4 rounded-xl overflow-hidden">
                     <Image
@@ -367,7 +385,6 @@ const ProductCard = ({ productData }) => {
                   </div>
                 </div>
 
-                {/* Product Details */}
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                     {productData?.name}
@@ -376,14 +393,6 @@ const ProductCard = ({ productData }) => {
                     {productData?.category}
                   </span>
 
-                  {/* Rating (Uncomment if data is available) */}
-                  {/* {productData.rating && (
-                   <div className="flex items-center my-3">
-                     ... Rating Stars ...
-                   </div>
-                 )} */}
-
-                  {/* Price */}
                   <div className="mb-4 mt-4">
                     <span className="text-2xl font-bold text-gray-900 dark:text-white">
                       ${price?.toFixed(2)}
@@ -399,7 +408,6 @@ const ProductCard = ({ productData }) => {
                     {productData?.description}
                   </p>
 
-                  {/* Colors */}
                   {colors?.length > 0 && (
                     <div className="mb-4">
                       <h4 className="font-medium mb-2 text-gray-900 dark:text-white">
@@ -430,7 +438,6 @@ const ProductCard = ({ productData }) => {
                     </div>
                   )}
 
-                  {/* Sizes */}
                   {sizes?.length > 0 && (
                     <div className="mb-6">
                       <h4 className="font-medium mb-2 text-gray-900 dark:text-white">
