@@ -1,4 +1,3 @@
-// app/Components/Cart/CartTotals.jsx
 "use client";
 
 const CartTotals = ({
@@ -7,6 +6,7 @@ const CartTotals = ({
   discount,
   total,
   shippingMethodName,
+  showShipping = true, // New prop to control visibility
 }) => {
   return (
     <div className="space-y-3">
@@ -16,15 +16,19 @@ const CartTotals = ({
           ${subtotal.toFixed(2)}
         </span>
       </div>
-      <div className="flex justify-between items-center text-lg">
-        {/* UPDATED: Displays the name of the selected shipping method */}
-        <span className="text-[var(--color-text-secondary)]">
-          {shippingMethodName || "Delivery"}
-        </span>
-        <span className="font-semibold text-[var(--color-text-primary)]">
-          ${shipping.toFixed(2)}
-        </span>
-      </div>
+
+      {/* UPDATED: Conditionally render the shipping cost row */}
+      {showShipping && (
+        <div className="flex justify-between items-center text-lg">
+          <span className="text-[var(--color-text-secondary)]">
+            {shippingMethodName || "Shipping"}
+          </span>
+          <span className="font-semibold text-[var(--color-text-primary)]">
+            ${shipping > 0 ? shipping.toFixed(2) : "Free"}
+          </span>
+        </div>
+      )}
+
       {discount > 0 && (
         <div className="flex justify-between items-center text-lg">
           <span className="text-[var(--color-text-secondary)]">Discount</span>

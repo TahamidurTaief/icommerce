@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import OrderSummary from "./OrderSummary";
@@ -140,11 +141,11 @@ const CartView = () => {
               Order Details
             </h2>
 
-            <ShippingOptions
+            {/* <ShippingOptions
               options={ShippingData}
               selectedId={selectedShippingId}
               onSelect={setSelectedShippingId}
-            />
+            /> */}
             <div className="border-t border-[var(--color-border)]"></div>
             <CartTotals
               subtotal={subtotal}
@@ -158,13 +159,15 @@ const CartView = () => {
               onApplyCoupon={handleApplyCoupon}
               appliedCoupon={appliedCoupon}
             />
-            <motion.button
-              className="w-full bg-[var(--color-button-primary)] text-white font-bold py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
-              whileTap={{ scale: 0.98 }}
-              disabled={cartItems.length === 0}
-            >
-              Proceed to Checkout
-            </motion.button>
+            <Link href="/checkout">
+              <motion.button
+                className="w-full bg-[var(--color-button-primary)] text-white font-bold py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+                whileTap={{ scale: 0.98 }}
+                disabled={cartItems.length === 0}
+              >
+                Proceed to Checkout
+              </motion.button>
+            </Link>
           </div>
         </div>
       </motion.div>
