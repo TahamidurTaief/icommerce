@@ -171,13 +171,15 @@ const Navbar = () => {
 
             <div className="w-full flex justify-end items-center gap-3">
               <ThemeToggle />
-              <CiShoppingCart
-                className="text-4xl p-2 rounded-full"
-                style={{
-                  backgroundColor: "var(--color-muted-bg)",
-                  color: "var(--color-text-primary)",
-                }}
-              />
+              <Link href="/cart">
+                <CiShoppingCart
+                  className="text-4xl p-2 rounded-full"
+                  style={{
+                    backgroundColor: "var(--color-muted-bg)",
+                    color: "var(--color-text-primary)",
+                  }}
+                />
+              </Link>
               <IoBagCheckOutline
                 className="text-4xl p-2 rounded-full"
                 style={{
@@ -321,7 +323,7 @@ const Navbar = () => {
         }}
       >
         <div className="flex items-center gap-3">
-          <Link href="/">          
+          <Link href="/">
             <Image
               src={logo}
               alt="iCommerce"
@@ -370,7 +372,7 @@ const Navbar = () => {
           label="Shop"
         />
         <NavIcon
-          href="#"
+          href="/cart"
           icon={<CiShoppingCart className="text-[22px]" />}
           label="Cart"
         />
