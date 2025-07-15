@@ -15,12 +15,6 @@ export const ShippingData = [
     price: 15.0,
   },
   {
-    id: "by-ship",
-    name: "By Ship",
-    description: "Economical but slower (15-30 days).",
-    price: 3.0,
-  },
-  {
     id: "by-air",
     name: "By Air",
     description: "Fastest international option (5-7 days).",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -9,12 +9,15 @@ import OrderSummary from "./OrderSummary";
 import CartTotals from "./CartTotals";
 import CartCoupon from "./CartCoupon";
 import CheckoutSteps from "./CheckoutSteps";
-import ShippingOptions from "./ShippingOptions"; // Re-imported for checkout page
+import CheckoutForm from "./CheckoutForm";
+import PaymentModal from "./PaymentModal";
+import PaymentMethods from "./PaymentMethods";
 import { CouponData } from "@/app/lib/Data/CouponData";
 import { ShippingData } from "@/app/lib/Data/ShippingData";
 
 const CheckoutProcess = () => {
   const pathname = usePathname();
+  const router = useRouter();
 
   const [cartItems, setCartItems] = useState([]);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -23,38 +26,35 @@ const CheckoutProcess = () => {
     ShippingData[0].id
   );
 
-  // Load cart from localStorage on component mount
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    zip: "",
+  });
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
+
   useEffect(() => {
     setMounted(true);
     const storedCart = localStorage.getItem("cartItems");
-    if (storedCart) {
-      try {
-        setCartItems(JSON.parse(storedCart));
-      } catch (error) {
-        console.error("Failed to parse cart from localStorage", error);
-        localStorage.removeItem("cartItems");
-      }
-    }
+    if (storedCart) setCartItems(JSON.parse(storedCart));
   }, []);
 
-  // Persist cart to localStorage whenever it changes
   useEffect(() => {
-    if (mounted) {
-      localStorage.setItem("cartItems", JSON.stringify(cartItems));
-    }
+    if (mounted) localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems, mounted]);
 
-  // Cart item management functions
   const handleUpdateQuantity = (productId, newQuantity) => {
-    if (newQuantity < 1) {
-      handleRemoveItem(productId);
-      return;
-    }
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === productId ? { ...item, quantity: newQuantity } : item
-      )
-    );
+    if (newQuantity < 1) handleRemoveItem(productId);
+    else
+      setCartItems(
+        cartItems.map((item) =>
+          item.id === productId ? { ...item, quantity: newQuantity } : item
+        )
+      );
   };
 
   const handleRemoveItem = (productId) => {
@@ -62,7 +62,6 @@ const CheckoutProcess = () => {
     toast.info("Item removed from cart", { position: "bottom-right" });
   };
 
-  // Memoized calculations for order totals
   const {
     subtotal,
     shippingCost,
@@ -76,12 +75,10 @@ const CheckoutProcess = () => {
       0
     );
     const count = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-
     const shippingMethod = ShippingData.find(
       (s) => s.id === selectedShippingId
     );
     let shipping = shippingMethod ? shippingMethod.price : 0;
-
     let discount = 0;
 
     if (appliedCoupon) {
@@ -93,52 +90,77 @@ const CheckoutProcess = () => {
           discount = appliedCoupon.discountValue;
           break;
         case "shipping_percentage":
-          shipping = shipping * (1 - appliedCoupon.discountValue / 100);
+          shipping *= 1 - appliedCoupon.discountValue / 100;
           break;
       }
     }
-
-    const finalTotal = sub + shipping - discount;
-
     return {
       subtotal: sub,
       shippingCost: shipping,
       discountAmount: discount,
-      total: finalTotal,
+      total: sub + shipping - discount,
       itemCount: count,
       selectedShippingMethod: shippingMethod,
     };
   }, [cartItems, appliedCoupon, selectedShippingId]);
 
-  // Coupon application logic
   const handleApplyCoupon = (code) => {
     const coupon = CouponData.find(
       (c) => c.code.toLowerCase() === code.toLowerCase()
     );
-
     if (coupon) {
       const { conditions } = coupon;
       const meetsMinPurchase =
         !conditions.minPurchase || subtotal >= conditions.minPurchase;
       const meetsMinItems =
         !conditions.minItems || itemCount >= conditions.minItems;
-
       if (meetsMinPurchase && meetsMinItems) {
         setAppliedCoupon(coupon);
         toast.success(`Coupon "${coupon.code}" applied!`, {
           position: "bottom-right",
         });
       } else {
-        let errorMsg = "Coupon requirements not met.";
-        if (!meetsMinPurchase)
-          errorMsg = `You must spend at least $${conditions.minPurchase}.`;
-        if (!meetsMinItems)
-          errorMsg = `You need at least ${conditions.minItems} items.`;
-        toast.error(errorMsg, { position: "bottom-right" });
+        toast.error(
+          `Requirements not met. Spend $${
+            conditions.minPurchase || 0
+          } or have ${conditions.minItems || 0} items.`,
+          { position: "bottom-right" }
+        );
       }
     } else {
       toast.error("Invalid coupon code.", { position: "bottom-right" });
     }
+  };
+
+  // FIXED: This function now simply opens the modal.
+  const handlePaymentSelection = (method) => {
+    setSelectedPaymentMethod(method);
+    setPaymentModalOpen(true);
+  };
+
+  const handleConfirmPayment = (paymentDetails) => {
+    // Validation for the main delivery form is now here.
+    const isFormValid = Object.values(formData).every(
+      (field) => field.trim() !== ""
+    );
+    if (!isFormValid) {
+      toast.error(
+        "Please fill out all delivery details before confirming payment."
+      );
+      return;
+    }
+
+    console.log("Order Confirmed:", {
+      deliveryDetails: formData,
+      paymentMethod: selectedPaymentMethod,
+      paymentDetails: paymentDetails,
+      orderItems: cartItems,
+      orderTotal: total,
+    });
+
+    toast.success("Order Placed Successfully!");
+    setCartItems([]);
+    router.push("/confirmation");
   };
 
   const getCurrentStep = () => {
@@ -148,11 +170,8 @@ const CheckoutProcess = () => {
     return 1;
   };
 
-  if (!mounted) {
-    return null; // The loading.jsx skeleton will be shown
-  }
+  if (!mounted) return null;
 
-  // Renders different content based on the current URL
   const renderContent = () => {
     switch (pathname) {
       case "/cart":
@@ -174,7 +193,7 @@ const CheckoutProcess = () => {
                   subtotal={subtotal}
                   discount={discountAmount}
                   total={subtotal - discountAmount}
-                  showShipping={false} // Shipping is not shown in the cart
+                  showShipping={false}
                 />
                 <div className="border-t border-[var(--color-border)]"></div>
                 <CartCoupon
@@ -183,7 +202,7 @@ const CheckoutProcess = () => {
                 />
                 <Link href="/checkout" passHref>
                   <motion.button
-                    className="w-full bg-[var(--color-button-primary)] text-white font-bold py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="w-full bg-[var(--color-button-primary)] text-white font-bold py-3 rounded-lg hover:opacity-90 disabled:opacity-50"
                     whileTap={{ scale: 0.98 }}
                     disabled={cartItems.length === 0}
                   >
@@ -197,22 +216,12 @@ const CheckoutProcess = () => {
       case "/checkout":
         return (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div className="lg:col-span-2 bg-[var(--color-second-bg)] p-6 rounded-xl border border-[var(--color-border)] space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
-                  Shipping Address
-                </h2>
-                {/* Placeholder for Shipping Address Form */}
-                <p className="text-[var(--color-text-secondary)]">
-                  A form for the user's shipping address will go here.
-                </p>
-              </div>
-              <div className="border-t border-[var(--color-border)]"></div>
-              {/* Delivery method is now here */}
-              <ShippingOptions
-                options={ShippingData}
-                selectedId={selectedShippingId}
-                onSelect={setSelectedShippingId}
+            <div className="lg:col-span-2">
+              <CheckoutForm
+                formData={formData}
+                onFormChange={setFormData}
+                selectedShippingId={selectedShippingId}
+                onShippingSelect={setSelectedShippingId}
               />
             </div>
             <div className="lg:col-span-1 sticky top-24">
@@ -233,15 +242,11 @@ const CheckoutProcess = () => {
                   onApplyCoupon={handleApplyCoupon}
                   appliedCoupon={appliedCoupon}
                 />
-                <Link href="/confirmation" passHref>
-                  <motion.button
-                    className="w-full bg-[var(--color-button-primary)] text-white font-bold py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
-                    whileTap={{ scale: 0.98 }}
-                    disabled={cartItems.length === 0}
-                  >
-                    Place Order
-                  </motion.button>
-                </Link>
+                <div className="border-t border-[var(--color-border)]"></div>
+                <PaymentMethods
+                  selectedMethod={selectedPaymentMethod}
+                  onSelect={handlePaymentSelection}
+                />
               </div>
             </div>
           </div>
@@ -260,12 +265,9 @@ const CheckoutProcess = () => {
               <p className="text-lg text-[var(--color-text-primary)] mb-2">
                 Your order has been placed successfully.
               </p>
-              <p className="text-[var(--color-text-secondary)]">
-                You will receive a confirmation email shortly.
-              </p>
               <Link href="/products" passHref>
                 <motion.button
-                  className="mt-8 bg-[var(--color-button-primary)] text-white font-bold py-3 px-8 rounded-lg hover:opacity-90 transition-opacity"
+                  className="mt-8 bg-[var(--color-button-primary)] text-white font-bold py-3 px-8 rounded-lg hover:opacity-90"
                   whileTap={{ scale: 0.98 }}
                   whileHover={{ scale: 1.05 }}
                 >
@@ -282,18 +284,25 @@ const CheckoutProcess = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* CheckoutSteps is now at the top level */}
       <CheckoutSteps currentStep={getCurrentStep()} />
       <motion.div
-        key={pathname} // Animate when the path changes
+        key={pathname}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         {renderContent()}
       </motion.div>
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        paymentMethod={selectedPaymentMethod}
+        totalAmount={total}
+        onConfirmPayment={handleConfirmPayment}
+      />
     </div>
   );
 };
 
 export default CheckoutProcess;
+  

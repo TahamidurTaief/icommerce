@@ -361,13 +361,13 @@ const Navbar = () => {
         }}
       >
         <NavIcon
-          href="#"
+          href="/   "
           icon={<RiHome2Line className="text-[22px]" />}
           label="Home"
           active
         />
         <NavIcon
-          href="#"
+          href="/products"
           icon={<CiShop className="text-[22px]" />}
           label="Shop"
         />
