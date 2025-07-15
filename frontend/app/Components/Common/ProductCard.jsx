@@ -203,13 +203,13 @@ const ProductCard = ({ productData }) => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <HiOutlineEye className="text-gray-700 text-lg" />
+                <HiOutlineEye className="text-gray-800 text-lg" />
               </motion.button>
               <motion.button
                 onClick={handleAddToWishlist}
                 className={`p-2.5 rounded-full shadow-lg transition-all duration-200 ${
                   isWishlisted
-                    ? "bg-red-500/90 text-white"
+                    ? "bg-red-500/90 text-gray-800"
                     : "bg-white/90 hover:bg-white"
                 }`}
                 aria-label="Add to wishlist"
@@ -222,7 +222,7 @@ const ProductCard = ({ productData }) => {
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 500, damping: 15 }}
                 >
-                  <LuHeart className="text-lg" />
+                  <LuHeart className="text-lg text-gray-800" />
                 </motion.div>
               </motion.button>
               <motion.button
@@ -237,7 +237,7 @@ const ProductCard = ({ productData }) => {
                 whileHover={productData?.inStock ? { scale: 1.1 } : {}}
                 whileTap={productData?.inStock ? { scale: 0.9 } : {}}
               >
-                <LuShoppingCart className="text-lg" />
+                <LuShoppingCart className="text-lg text-gray-800" />
               </motion.button>
             </div>
           </div>
