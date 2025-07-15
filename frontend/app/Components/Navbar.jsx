@@ -13,24 +13,9 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 import logo from "@/public/img/icommerce.png";
+import { CategoriesData } from "@/app/lib/Data/CategoriesData"; // Import CategoriesData
 
-// All categories for the main dropdown
-const allCategories = [
-  "Bundle Deals",
-  "Choice",
-  "Super Deals",
-  "Flash Sell",
-  "Top Rated",
-  "Winter Sale",
-  "Summer Sale",
-  "Electronics",
-  "Fashion",
-  "Home & Kitchen",
-  "Health & Beauty",
-  "Sports & Outdoors",
-];
-
-// List of offers for the "Offers" dropdown
+// List of offers for the dropdown
 const offerCategories = [
   "Bundle Deals",
   "Choice",
@@ -152,11 +137,11 @@ const NavIcon = ({ href, icon, label, active, onClick }) => {
 const Navbar = () => {
   const { openAuthModal } = useAuth();
   const [offersOpen, setOffersOpen] = useState(false);
-  const [allCategoriesOpen, setAllCategoriesOpen] = useState(false); // State for All Categories dropdown
+  const [allCategoriesOpen, setAllCategoriesOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const offersRef = useRef(null);
-  const allCatRef = useRef(null); // Ref for All Categories dropdown
+  const allCatRef = useRef(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -191,7 +176,7 @@ const Navbar = () => {
                 <Image
                   src={logo}
                   alt="iCommerce"
-                  className="h-full max-h-16 w-auto dark:bg-white rounded-full p-1"
+                  className="h-full max-h-12 w-auto dark:bg-white rounded-xl px-3 py-1"
                 />
               </Link>
             </div>
@@ -225,7 +210,7 @@ const Navbar = () => {
               ) : (
                 <motion.button
                   onClick={() => openAuthModal("login")}
-                  className="flex flex-row lato items-center gap-2 py-2 px-4 rounded-full bg-[var(--color-muted-bg)]"
+                  className="flex items-center gap-2 py-2 px-4 rounded-full bg-[var(--color-muted-bg)]"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -238,9 +223,7 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Secondary Navigation with All Categories button */}
           <div className="container relative flex justify-between items-center py-2">
-            {/* All Categories Dropdown */}
             <div ref={allCatRef} className="relative">
               <button
                 onClick={() => setAllCategoriesOpen(!allCategoriesOpen)}
@@ -267,13 +250,25 @@ const Navbar = () => {
                     exit={{ opacity: 0, y: -10 }}
                     className="absolute top-full left-0 mt-2 w-56 rounded-lg p-2 z-50 shadow-lg bg-[var(--color-surface)] border border-[var(--color-border)]"
                   >
-                    {allCategories.map((cat) => (
-                      <li key={cat}>
+                    {CategoriesData.map((cat) => (
+                      <li
+                        key={cat.id}
+                        onClick={() => setAllCategoriesOpen(false)}
+                      >
                         <Link
-                          href="#"
-                          className="block text-sm px-4 py-2 font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-muted-bg)] rounded cursor-pointer"
+                          href={`/products?category=${encodeURIComponent(
+                            cat.title
+                          )}`}
+                          className="flex items-center gap-3 text-sm px-4 py-2 font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-muted-bg)] rounded cursor-pointer"
                         >
-                          {cat}
+                          <Image
+                            src={cat.icon}
+                            alt={cat.title}
+                            width={20}
+                            height={20}
+                            className="rounded-full"
+                          />
+                          {cat.title}
                         </Link>
                       </li>
                     ))}
@@ -282,13 +277,12 @@ const Navbar = () => {
               </AnimatePresence>
             </div>
 
-            {/* Main Nav Links */}
             <nav className="flex items-center gap-6">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-md font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                  className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
                 >
                   {link.name}
                 </Link>
@@ -340,7 +334,7 @@ const Navbar = () => {
               <Image
                 src={logo}
                 alt="iCommerce"
-                className="h-full max-h-12 w-auto dark:bg-white rounded-xl px-2 py-1"
+                className="h-full max-h-10 w-auto dark:bg-white rounded-full p-1"
               />
             </Link>
             <div className="flex items-center w-full px-3 rounded-lg bg-[var(--color-muted-bg)]">

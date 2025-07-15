@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation"; // Import useRouter
 import { ProductsData } from "@/app/lib/Data/ProductsData";
 import ProductCard from "../Common/ProductCard";
 import { FiFilter, FiX } from "react-icons/fi";
@@ -7,14 +8,10 @@ import { useTheme } from "next-themes";
 import Sidebar from "./Sidebar";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Motion variants defined directly in the component file
 const staggerContainer = (staggerChildren = 0.1, delayChildren = 0) => ({
   hidden: {},
   show: {
-    transition: {
-      staggerChildren,
-      delayChildren,
-    },
+    transition: { staggerChildren, delayChildren },
   },
 });
 
@@ -28,59 +25,61 @@ const fadeIn = (direction, type = "tween", delay = 0, duration = 0.5) => ({
     x: 0,
     y: 0,
     opacity: 1,
-    transition: {
-      type,
-      delay,
-      duration,
-      ease: "easeOut",
-    },
+    transition: { type, delay, duration, ease: "easeOut" },
   },
 });
 
 const ProductPage = () => {
-  const { resolvedTheme, theme, systemTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const categoryFromUrl = searchParams.get("category");
 
-  const [filteredProducts, setFilteredProducts] = useState(ProductsData);
+  const [mounted, setMounted] = useState(false);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [filters, setFilters] = useState({
-    category: "",
+    category: categoryFromUrl || "",
     priceRange: [0, 1000],
     sort: "featured",
     colors: [],
     brands: [],
   });
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => setMounted(true), []);
+  // Sync URL category with filter state
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, category: categoryFromUrl || "" }));
+  }, [categoryFromUrl]);
 
   const applyFilters = useCallback(() => {
+    setIsLoading(true);
     let result = [...ProductsData];
 
-    if (filters.category) {
-      result = result.filter(
-        (product) => product.category === filters.category
-      );
+    // Category filter (priority to URL)
+    const activeCategory = filters.category;
+    if (activeCategory) {
+      result = result.filter((product) => product.category === activeCategory);
     }
 
+    // Other filters
     result = result.filter(
       (product) =>
         product.price >= filters.priceRange[0] &&
         product.price <= filters.priceRange[1]
     );
-
     if (filters.colors.length > 0) {
       result = result.filter((product) =>
         product.colors?.some((color) => filters.colors.includes(color.name))
       );
     }
-
     if (filters.brands.length > 0) {
       result = result.filter((product) =>
         filters.brands.includes(product.brand)
       );
     }
 
+    // Sorting
     switch (filters.sort) {
       case "price-asc":
         result.sort((a, b) => a.price - b.price);
@@ -94,20 +93,44 @@ const ProductPage = () => {
       case "name-desc":
         result.sort((a, b) => b.name.localeCompare(a.name));
         break;
+      default:
+        break;
     }
 
-    setFilteredProducts(result);
+    // Simulate loading delay for better UX
+    setTimeout(() => {
+      setFilteredProducts(result);
+      setIsLoading(false);
+    }, 300);
   }, [filters]);
 
   useEffect(() => {
+    setMounted(true);
     applyFilters();
   }, [applyFilters]);
 
-  const handleFilterChange = useCallback((newFilters) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-  }, []);
+  const handleFilterChange = useCallback(
+    (newFilters) => {
+      const updatedFilters = { ...filters, ...newFilters };
+
+      // If category is changed, update URL
+      if (newFilters.category !== undefined) {
+        const params = new URLSearchParams(window.location.search);
+        if (newFilters.category) {
+          params.set("category", newFilters.category);
+        } else {
+          params.delete("category");
+        }
+        router.push(`${window.location.pathname}?${params.toString()}`);
+      } else {
+        setFilters(updatedFilters);
+      }
+    },
+    [filters, router]
+  );
 
   const clearFilters = () => {
+    router.push("/products"); // Clear URL params
     setFilters({
       category: "",
       priceRange: [0, 1000],
@@ -115,11 +138,6 @@ const ProductPage = () => {
       colors: [],
       brands: [],
     });
-  };
-
-  const handleModalClose = () => {
-    setIsAnimating(false);
-    setTimeout(() => setShowMobileFilters(false), 300);
   };
 
   const mobileBtnClass = useMemo(
@@ -132,9 +150,9 @@ const ProductPage = () => {
     [resolvedTheme]
   );
 
-  if (!mounted) return null;
-
-  const currentTheme = theme === "system" ? systemTheme : theme;
+  if (!mounted) {
+    return null; // Let Suspense handle the initial loading state
+  }
 
   return (
     <motion.div
@@ -143,23 +161,16 @@ const ProductPage = () => {
       variants={staggerContainer()}
       className="w-[90%] mx-auto px-4 py-8"
     >
-      {/* Mobile Filter Button */}
       <motion.button
         variants={fadeIn("up", "tween", 0.2, 1)}
-        onClick={() => {
-          setIsAnimating(true);
-          setShowMobileFilters(true);
-        }}
+        onClick={() => setShowMobileFilters(true)}
         className={mobileBtnClass}
         aria-label="Open Filters"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
       >
         <FiFilter /> Filters
       </motion.button>
 
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Desktop Sidebar */}
         <motion.div
           variants={fadeIn("right", "tween", 0.2, 1)}
           className="hidden md:block w-72 flex-shrink-0"
@@ -168,141 +179,104 @@ const ProductPage = () => {
             filters={filters}
             onFilterChange={handleFilterChange}
             onClearFilters={clearFilters}
-            theme={currentTheme}
+            theme={resolvedTheme}
           />
         </motion.div>
 
-        {/* Mobile Filters Modal */}
         <AnimatePresence>
           {showMobileFilters && (
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: isAnimating ? 1 : 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-50 flex items-end md:hidden"
-              style={{
-                backgroundColor: isAnimating
-                  ? "rgba(0, 0, 0, 0.5)"
-                  : "rgba(0, 0, 0, 0)",
-              }}
-              onClick={handleModalClose}
+              className="fixed inset-0 z-50 flex items-end md:hidden bg-black/50"
+              onClick={() => setShowMobileFilters(false)}
             >
               <motion.div
                 initial={{ y: "100%" }}
-                animate={{ y: isAnimating ? 0 : "100%" }}
+                animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25 }}
-                className={`w-full ${
-                  currentTheme === "dark" ? "bg-gray-800" : "bg-white"
-                } rounded-t-2xl shadow-xl`}
-                style={{
-                  maxHeight: "70vh",
-                  paddingBottom: "env(safe-area-inset-bottom, 20px)",
-                }}
+                className={`w-full bg-[var(--color-surface)] rounded-t-2xl shadow-xl max-h-[70vh]`}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div
-                  className={`sticky top-0 z-10 ${
-                    currentTheme === "dark" ? "bg-gray-800" : "bg-white"
-                  } border-b ${
-                    currentTheme === "dark"
-                      ? "border-gray-700"
-                      : "border-gray-200"
-                  } px-6 py-4 flex justify-between items-center rounded-t-2xl`}
-                >
-                  <h3
-                    className={`text-lg font-bold ${
-                      currentTheme === "dark" ? "text-white" : "text-gray-900"
-                    }`}
-                  >
+                <div className="sticky top-0 z-10 bg-[var(--color-surface)] border-b border-[var(--color-border)] px-6 py-4 flex justify-between items-center rounded-t-2xl">
+                  <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
                     Filters
                   </h3>
-                  <motion.button
-                    onClick={handleModalClose}
-                    className={`p-1 ${
-                      currentTheme === "dark"
-                        ? "text-gray-300"
-                        : "text-gray-500"
-                    } hover:text-gray-700 dark:hover:text-gray-200`}
-                    aria-label="Close Filter"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                  <button
+                    onClick={() => setShowMobileFilters(false)}
+                    className="p-1 text-[var(--color-text-secondary)]"
                   >
                     <FiX size={24} />
-                  </motion.button>
+                  </button>
                 </div>
-
-                <div
-                  className="overflow-y-auto p-6"
-                  style={{ maxHeight: "calc(70vh - 72px)" }}
-                >
+                <div className="overflow-y-auto p-6 max-h-[calc(70vh-72px)]">
                   <Sidebar
                     filters={filters}
                     onFilterChange={handleFilterChange}
                     onClearFilters={clearFilters}
-                    theme={currentTheme}
+                    theme={resolvedTheme}
                   />
-                  <motion.button
-                    onClick={handleModalClose}
-                    className={`w-full mt-4 py-3 rounded-lg font-medium ${
-                      currentTheme === "dark"
-                        ? "bg-blue-600 hover:bg-blue-700 text-white"
-                        : "bg-primary hover:bg-primary-dark text-white"
-                    } transition-colors`}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
+                    onClick={() => setShowMobileFilters(false)}
+                    className="w-full mt-4 py-3 rounded-lg font-medium bg-primary text-white"
                   >
                     Apply Filters
-                  </motion.button>
+                  </button>
                 </div>
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Product Grid */}
         <motion.div
           variants={fadeIn("left", "tween", 0.2, 1)}
           className="flex-1"
         >
-          <motion.div
-            layout
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.sku || index}
-                  layout
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 25,
-                    duration: 0.5,
-                  }}
-                >
-                  <ProductCard productData={product} />
-                </motion.div>
+          {isLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-gray-300 dark:bg-gray-700 rounded-xl h-64 w-full"></div>
+                </div>
               ))}
-            </AnimatePresence>
-
-            {filteredProducts.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className={`col-span-full text-center py-10 ${
-                  currentTheme === "dark" ? "text-gray-400" : "text-gray-500"
-                }`}
-              >
-                No products match your filters
-              </motion.div>
-            )}
-          </motion.div>
+            </div>
+          ) : (
+            <motion.div
+              layout
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+            >
+              <AnimatePresence>
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <motion.div
+                      key={product.sku}
+                      layout
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 25,
+                      }}
+                    >
+                      <ProductCard productData={product} />
+                    </motion.div>
+                  ))
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="col-span-full text-center py-10 text-[var(--color-text-secondary)]"
+                  >
+                    No products match your filters.
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </motion.div>

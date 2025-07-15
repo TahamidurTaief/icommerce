@@ -73,7 +73,7 @@ const AuthModal = () => {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Left Panel: Illustration */}
-            <div className="hidden md:flex flex-col items-center justify-center bg-[var(--color-second-bg)] p-8 text-center">
+            <div className="hidden md:flex flex-col items-center justify-center bg-[var(--color-second-bg)] p-3 rounded-xl text-center">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -82,21 +82,20 @@ const AuthModal = () => {
                 <Image
                   src={authIllustration}
                   alt="Authentication Illustration"
-                  width={300}
-                  height={300}
+                  className="w-full h-full rounded-xl"
                   priority
                   onError={(e) => {
                     e.target.src =
                       "https://placehold.co/300x300/313c48/f9fafb?text=Instant+Support";
                   }}
                 />
-                <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mt-4">
+                {/* <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mt-4">
                   Instant support & reply
                 </h2>
                 <p className="text-[var(--color-text-secondary)] mt-2">
                   Arogga will receive your order and be able to reply to you
                   once you place an order and ask for help.
-                </p>
+                </p> */}
               </motion.div>
             </div>
 
@@ -172,7 +171,7 @@ const AuthModal = () => {
 
                 <motion.button
                   type="submit"
-                  className="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition-colors"
+                  className="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition-colors"
                   whileTap={{ scale: 0.98 }}
                 >
                   {authModalView === "login" ? "Send" : "Create Account"}
