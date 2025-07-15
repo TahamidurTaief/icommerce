@@ -1,8 +1,12 @@
 // app/layout.js
-import Navbar from "@/app/Components/Navbar";
-import "./globals.css";
 import { Poppins, Lato, Raleway } from "next/font/google";
 import { ThemeProvider } from "@/app/Components/ThemeProvider";
+import { AuthProvider } from "@/app/contexts/AuthContext"; // Import AuthProvider
+import Navbar from "@/app/Components/Navbar";
+import AuthModal from "@/app/Components/Auth/AuthModal"; // Import AuthModal
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "./globals.css";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -37,13 +41,34 @@ export default function RootLayout({ children }) {
         className={`${lato.variable} ${poppins.variable} ${raleway.variable} font-lato w-full`}
         style={{ margin: 0 }}
       >
-        <ThemeProvider>
-          <Navbar />
-          <main className="w-full">
-            {/* Ensure no max-width restriction here */}
-            <div className="w-full">{children}</div>
-          </main>
-        </ThemeProvider>
+        {/* FIXED: AuthProvider now wraps everything, making the context available globally. */}
+        <AuthProvider>
+          <ThemeProvider>
+            <div className="bg-[var(--color-background)] min-h-screen">
+              <Navbar />
+              <main className="w-full">
+                <div className="w-full">{children}</div>
+              </main>
+
+              {/* AuthModal is rendered here globally but is only visible when triggered */}
+              <AuthModal />
+
+              {/* ToastContainer for sitewide notifications */}
+              <ToastContainer
+                position="bottom-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="dark"
+              />
+            </div>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

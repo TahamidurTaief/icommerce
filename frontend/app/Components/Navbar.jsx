@@ -4,17 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import { CiSearch, CiShop, CiUser, CiShoppingCart } from "react-icons/ci";
-import { IoBagCheckOutline, IoSettingsOutline } from "react-icons/io5";
+import { CiSearch, CiUser, CiShoppingCart, CiShop } from "react-icons/ci";
+import { IoBagCheckOutline } from "react-icons/io5";
 import { RiHome2Line } from "react-icons/ri";
-import { IoIosArrowDown, IoMdMenu, IoMdHelp } from "react-icons/io";
-import { FiMessageSquare } from "react-icons/fi";
-import { MdAddCall } from "react-icons/md";
+import { IoIosArrowDown, IoMdMenu } from "react-icons/io";
 import { BsSun, BsMoon } from "react-icons/bs";
+import { useAuth } from "@/app/contexts/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 import logo from "@/public/img/icommerce.png";
 
-const categories = [
+// All categories for the main dropdown
+const allCategories = [
   "Bundle Deals",
   "Choice",
   "Super Deals",
@@ -25,8 +26,12 @@ const categories = [
   "Electronics",
   "Fashion",
   "Home & Kitchen",
+  "Health & Beauty",
+  "Sports & Outdoors",
 ];
-const OfferCategories = [
+
+// List of offers for the "Offers" dropdown
+const offerCategories = [
   "Bundle Deals",
   "Choice",
   "Super Deals",
@@ -34,9 +39,16 @@ const OfferCategories = [
   "Top Rated",
   "Winter Sale",
   "Summer Sale",
-  "Electronics",
-  "Fashion",
-  "Home & Kitchen",
+];
+
+// Main navigation links as per your request
+const navLinks = [
+  { name: "Home", href: "/" },
+  { name: "Shop", href: "/products" },
+  { name: "Orders", href: "/orders" },
+  { name: "Cart", href: "/cart" },
+  { name: "Checkout", href: "/checkout" },
+  { name: "Order Track", href: "/track-order" },
 ];
 
 const ThemeToggle = () => {
@@ -49,10 +61,7 @@ const ThemeToggle = () => {
 
   if (!mounted) {
     return (
-      <div
-        className="p-2 rounded-full w-[44px] h-[44px]"
-        style={{ backgroundColor: "var(--color-muted-bg)" }}
-      />
+      <div className="p-2 rounded-full w-[44px] h-[44px] bg-gray-200 dark:bg-gray-700 animate-pulse" />
     );
   }
 
@@ -63,71 +72,107 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="relative p-2 rounded-full flex justify-center items-center"
-      style={{ backgroundColor: "var(--color-muted-bg)" }}
-      aria-label={
-        theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-      }
+      className="relative p-2 rounded-full flex justify-center items-center bg-[var(--color-muted-bg)]"
+      aria-label="Toggle theme"
     >
-      <BsSun
-        className="theme-toggle-sun text-xl"
-        style={{ color: "var(--color-text-primary)" }}
-      />
-      <BsMoon
-        className="theme-toggle-moon text-xl"
-        style={{ color: "var(--color-accent-orange)" }}
-      />
+      <BsSun className="theme-toggle-sun text-xl text-[var(--color-text-primary)]" />
+      <BsMoon className="theme-toggle-moon text-xl text-[var(--color-accent-orange)]" />
     </button>
   );
 };
 
-const Navbar = () => {
-  const [breakpoint, setBreakpoint] = useState(null);
-  const [showMore, setShowMore] = useState(false);
-  const [allCategoriesOpen, setAllCategoriesOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+const NavbarSkeleton = () => (
+  <div className="hidden md:block w-full z-50 sticky top-0 animate-pulse">
+    <div
+      className="flex flex-col w-full px-6 py-2 h-[132px]"
+      style={{
+        backgroundColor: "var(--color-surface)",
+        borderBottom: "1px solid var(--color-border)",
+      }}
+    >
+      <div className="container flex justify-between items-center h-full">
+        <div className="h-16 w-40 bg-[var(--color-muted-bg)] rounded-lg"></div>
+        <div className="h-10 w-1/2 bg-[var(--color-muted-bg)] rounded-lg"></div>
+        <div className="flex justify-end items-center gap-3 w-full">
+          <div className="h-11 w-11 bg-[var(--color-muted-bg)] rounded-full"></div>
+          <div className="h-11 w-11 bg-[var(--color-muted-bg)] rounded-full"></div>
+          <div className="h-11 w-32 bg-[var(--color-muted-bg)] rounded-full"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
-  const allCatRef = useRef(null);
-  const showMoreRef = useRef(null);
+const NavIcon = ({ href, icon, label, active, onClick }) => {
+  const content = (
+    <>
+      <div
+        style={{
+          color: active
+            ? "var(--color-button-primary)"
+            : "var(--color-text-secondary)",
+        }}
+      >
+        {icon}
+      </div>
+      <span
+        className="text-xs font-semibold"
+        style={{
+          color: active
+            ? "var(--color-button-primary)"
+            : "var(--color-text-secondary)",
+        }}
+      >
+        {label}
+      </span>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        onClick={onClick}
+        className="flex flex-col justify-center items-center gap-1"
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className="flex flex-col justify-center items-center gap-1"
+    >
+      {content}
+    </Link>
+  );
+};
+
+const Navbar = () => {
+  const { openAuthModal } = useAuth();
+  const [offersOpen, setOffersOpen] = useState(false);
+  const [allCategoriesOpen, setAllCategoriesOpen] = useState(false); // State for All Categories dropdown
+  const [isClient, setIsClient] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const offersRef = useRef(null);
+  const allCatRef = useRef(null); // Ref for All Categories dropdown
 
   useEffect(() => {
     setIsClient(true);
-    const updateSize = () => {
-      const width = window.innerWidth;
-      if (width < 952) setBreakpoint("mobile");
-      else if (width < 1085) setBreakpoint("tablet");
-      else if (width < 1232) setBreakpoint("laptop");
-      else if (width < 1400) setBreakpoint("desktop");
-      else if (width < 1530) setBreakpoint("desktop2");
-      else setBreakpoint("largescreen");
-    };
-    updateSize();
-    window.addEventListener("resize", updateSize);
-
     const handleClickOutside = (event) => {
-      if (showMoreRef.current && !showMoreRef.current.contains(event.target))
-        setShowMore(false);
-      if (allCatRef.current && !allCatRef.current.contains(event.target))
+      if (offersRef.current && !offersRef.current.contains(event.target)) {
+        setOffersOpen(false);
+      }
+      if (allCatRef.current && !allCatRef.current.contains(event.target)) {
         setAllCategoriesOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      window.removeEventListener("resize", updateSize);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (!isClient) return null;
-
-  let visibleCount = 8;
-  if (breakpoint === "mobile") visibleCount = 3;
-  else if (breakpoint === "tablet") visibleCount = 4;
-  else if (breakpoint === "laptop") visibleCount = 5;
-  else if (breakpoint === "desktop") visibleCount = 6;
-  else if (breakpoint === "desktop2") visibleCount = 7;
-
-  const visibleCategories = OfferCategories.slice(0, visibleCount);
-  const moreCategories = OfferCategories.slice(visibleCount);
+  if (!isClient) return <NavbarSkeleton />;
 
   return (
     <>
@@ -141,317 +186,202 @@ const Navbar = () => {
           }}
         >
           <div className="container flex justify-between items-center pt-1">
-            <div className="flex items-center gap-4 w-full">
+            <div className="flex items-center gap-4">
               <Link href="/">
                 <Image
                   src={logo}
                   alt="iCommerce"
-                  className="h-full max-h-20 dark:max-h-16 w-auto dark:bg-white rounded-full px-3"
+                  className="h-full max-h-16 w-auto dark:bg-white rounded-full p-1"
                 />
               </Link>
             </div>
-
-            <div
-              className="w-full flex items-center px-3 rounded-lg"
-              style={{ backgroundColor: "var(--color-muted-bg)" }}
-            >
+            <div className="w-full max-w-lg flex items-center px-3 rounded-lg bg-[var(--color-muted-bg)]">
               <input
                 type="text"
                 placeholder="Search Here"
-                className="poppins w-full py-2 px-2 bg-transparent outline-none border-0 outline-0"
+                className="poppins w-full py-2 px-2 bg-transparent outline-none border-0"
                 style={{ color: "var(--color-text-primary)" }}
               />
-              <Link href="#">
-                <CiSearch
-                  className="text-2xl"
-                  style={{ color: "var(--color-text-secondary)" }}
-                />
-              </Link>
+              <button>
+                <CiSearch className="text-2xl text-[var(--color-text-secondary)]" />
+              </button>
             </div>
-
-            <div className="w-full flex justify-end items-center gap-3">
+            <div className="flex justify-end items-center gap-3">
               <ThemeToggle />
               <Link href="/cart">
-                <CiShoppingCart
-                  className="text-4xl p-2 rounded-full"
-                  style={{
-                    backgroundColor: "var(--color-muted-bg)",
-                    color: "var(--color-text-primary)",
-                  }}
-                />
+                <CiShoppingCart className="text-4xl p-2 rounded-full bg-[var(--color-muted-bg)] text-[var(--color-text-primary)]" />
               </Link>
-              <IoBagCheckOutline
-                className="text-4xl p-2 rounded-full"
-                style={{
-                  backgroundColor: "var(--color-muted-bg)",
-                  color: "var(--color-text-primary)",
-                }}
-              />
-              <div
-                className="flex items-center gap-2 p-2 rounded-full"
-                style={{ backgroundColor: "var(--color-muted-bg)" }}
-              >
-                <h4
-                  className="text-md font-medium"
-                  style={{ color: "var(--color-text-primary)" }}
+              <Link href="/orders">
+                <IoBagCheckOutline className="text-4xl p-2 rounded-full bg-[var(--color-muted-bg)] text-[var(--color-text-primary)]" />
+              </Link>
+
+              {isLoggedIn ? (
+                <div className="flex items-center gap-2 p-2 rounded-full bg-[var(--color-muted-bg)]">
+                  <h4 className="text-md font-medium text-[var(--color-text-primary)]">
+                    Tahamidur
+                  </h4>
+                  <CiUser className="text-2xl text-[var(--color-text-primary)]" />
+                </div>
+              ) : (
+                <motion.button
+                  onClick={() => openAuthModal("login")}
+                  className="flex flex-row lato items-center gap-2 py-2 px-4 rounded-full bg-[var(--color-muted-bg)]"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  Tahamidur
-                </h4>
-                <CiUser
-                  className="text-2xl"
-                  style={{ color: "var(--color-text-primary)" }}
-                />
-              </div>
+                  <h4 className="text-md font-medium text-[var(--color-text-primary)]">
+                    Login
+                  </h4>
+                  <CiUser className="text-2xl text-[var(--color-text-primary)]" />
+                </motion.button>
+              )}
             </div>
           </div>
 
-          <div className="container relative pb-8">
-            <nav className="flex justify-between items-center py-2">
-              <div
-                ref={allCatRef}
-                className="flex flex-col absolute top-1 left-0"
+          {/* Secondary Navigation with All Categories button */}
+          <div className="container relative flex justify-between items-center py-2">
+            {/* All Categories Dropdown */}
+            <div ref={allCatRef} className="relative">
+              <button
+                onClick={() => setAllCategoriesOpen(!allCategoriesOpen)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer bg-[var(--color-muted-bg)]"
               >
-                <div
-                  onClick={() => setAllCategoriesOpen(!allCategoriesOpen)}
-                  className="flex items-center gap-2 px-5 py-2 rounded-2xl cursor-pointer"
-                  style={{ backgroundColor: "var(--color-muted-bg)" }}
-                >
-                  <div className="flex flex-row items-center gap-3">
-                    <IoMdMenu
-                      className="text-lg"
-                      style={{ color: "var(--color-text-primary)" }}
-                    />
-                    <h2
-                      className="text-sm font-medium poppins"
-                      style={{ color: "var(--color-text-primary)" }}
-                    >
-                      All Categories
-                    </h2>
-                    <IoIosArrowDown
-                      className="transition-transform"
-                      style={{
-                        color: "var(--color-text-primary)",
-                        transform: allCategoriesOpen
-                          ? "rotate(180deg)"
-                          : "rotate(0deg)",
-                      }}
-                    />
-                  </div>
-                  {allCategoriesOpen && (
-                    <ul
-                      className="absolute top-full left-0 mt-1 rounded-lg p-2 z-50 lato shadow-lg"
-                      style={{
-                        backgroundColor: "var(--color-surface)",
-                        border: "1px solid var(--color-border)",
-                      }}
-                    >
-                      {categories.map((cat, idx) => (
-                        <li
-                          key={idx}
-                          className="text-sm px-4 py-2 lato font-medium hover:bg-[var(--color-muted-bg)] rounded cursor-pointer"
-                          style={{ color: "var(--color-text-primary)" }}
+                <IoMdMenu className="text-lg text-[var(--color-text-primary)]" />
+                <h2 className="text-sm font-medium poppins text-[var(--color-text-primary)]">
+                  All Categories
+                </h2>
+                <IoIosArrowDown
+                  className="transition-transform text-[var(--color-text-primary)]"
+                  style={{
+                    transform: allCategoriesOpen
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
+                  }}
+                />
+              </button>
+              <AnimatePresence>
+                {allCategoriesOpen && (
+                  <motion.ul
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full left-0 mt-2 w-56 rounded-lg p-2 z-50 shadow-lg bg-[var(--color-surface)] border border-[var(--color-border)]"
+                  >
+                    {allCategories.map((cat) => (
+                      <li key={cat}>
+                        <Link
+                          href="#"
+                          className="block text-sm px-4 py-2 font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-muted-bg)] rounded cursor-pointer"
                         >
                           {cat}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-              <ul
-                className="flex gap-3 absolute right-0 top-1 text-sm font-medium justify-end items-end mr-0"
-                style={{ color: "var(--color-text-secondary)" }}
-              >
-                {visibleCategories.map((cat, idx) => (
-                  <li
-                    key={idx}
-                    className="py-2 px-4 hover:bg-[var(--color-muted-bg)] rounded-full poppins cursor-pointer"
-                  >
-                    {cat}
-                  </li>
-                ))}
-                {moreCategories.length > 0 && (
-                  <li className="relative">
-                    <button
-                      onClick={() => setShowMore(!showMore)}
-                      ref={showMoreRef}
-                      className="flex items-center gap-1 py-2 px-4 hover:bg-[var(--color-muted-bg)] rounded-full poppins"
+                        </Link>
+                      </li>
+                    ))}
+                  </motion.ul>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Main Nav Links */}
+            <nav className="flex items-center gap-6">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-md font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <div ref={offersRef} className="relative">
+                <button
+                  onClick={() => setOffersOpen(!offersOpen)}
+                  className="flex items-center gap-1 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  Offers
+                  <IoIosArrowDown
+                    className={`transition-transform ${
+                      offersOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                <AnimatePresence>
+                  {offersOpen && (
+                    <motion.ul
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 rounded-lg p-2 z-50 shadow-lg bg-[var(--color-surface)] border border-[var(--color-border)]"
                     >
-                      More{" "}
-                      <IoIosArrowDown
-                        className="transition-transform"
-                        style={{
-                          transform: showMore
-                            ? "rotate(180deg)"
-                            : "rotate(0deg)",
-                        }}
-                      />
-                    </button>
-                    {showMore && (
-                      <ul
-                        className="absolute right-0 z-50 flex flex-col gap-1 mt-2 shadow-md rounded-md p-2"
-                        style={{
-                          backgroundColor: "var(--color-surface)",
-                          border: "1px solid var(--color-border)",
-                        }}
-                      >
-                        {moreCategories.map((cat, idx) => (
-                          <li
-                            key={idx}
-                            className="py-2 px-4 hover:bg-[var(--color-muted-bg)] rounded poppins whitespace-nowrap cursor-pointer"
-                            style={{ color: "var(--color-text-secondary)" }}
+                      {offerCategories.map((cat) => (
+                        <li key={cat}>
+                          <Link
+                            href="#"
+                            className="block text-sm px-4 py-2 font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-muted-bg)] rounded cursor-pointer"
                           >
                             {cat}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                )}
-              </ul>
+                          </Link>
+                        </li>
+                      ))}
+                    </motion.ul>
+                  )}
+                </AnimatePresence>
+              </div>
             </nav>
           </div>
         </div>
       </div>
 
-      {/* Mobile Navbar */}
-      <div
-        className="md:hidden sticky top-0 left-0 right-0 z-50 px-4 py-2"
-        style={{
-          backgroundColor: "var(--color-surface)",
-          borderBottom: "1px solid var(--color-border)",
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <Link href="/">
-            <Image
-              src={logo}
-              alt="iCommerce"
-              className="h-full max-h-12 dark:max-h-10 w-auto dark:bg-white rounded-full px-3"
-            />
-          </Link>
-
-          <div
-            className="flex items-center w-full px-3 rounded-lg"
-            style={{ backgroundColor: "var(--color-muted-bg)" }}
-          >
-            <input
-              type="text"
-              placeholder="Search Here"
-              className="poppins w-full py-2 bg-transparent outline-none"
-              style={{ color: "var(--color-text-primary)" }}
-            />
-            <Link href="#">
-              <CiSearch
-                className="text-2xl"
-                style={{ color: "var(--color-text-secondary)" }}
+      {/* Mobile Top & Bottom Nav */}
+      <div className="md:hidden">
+        <div className="sticky top-0 left-0 right-0 z-50 px-4 py-2 bg-[var(--color-surface)] border-b border-[var(--color-border)]">
+          <div className="flex items-center gap-3">
+            <Link href="/">
+              <Image
+                src={logo}
+                alt="iCommerce"
+                className="h-full max-h-12 w-auto dark:bg-white rounded-xl px-2 py-1"
               />
             </Link>
+            <div className="flex items-center w-full px-3 rounded-lg bg-[var(--color-muted-bg)]">
+              <input
+                type="text"
+                placeholder="Search Here"
+                className="poppins w-full py-2 bg-transparent outline-none text-[var(--color-text-primary)]"
+              />
+              <button>
+                <CiSearch className="text-2xl text-[var(--color-text-secondary)]" />
+              </button>
+            </div>
+            <ThemeToggle />
           </div>
-          <ThemeToggle />
         </div>
-      </div>
-
-      {/* Mobile Bottom Navigation */}
-      <div
-        className="md:hidden fixed bottom-0 left-0 right-0 px-6 py-3 z-50 rounded-t-2xl flex justify-between items-center"
-        style={{
-          backgroundColor: "var(--color-surface)",
-          borderTop: "1px solid var(--color-border)",
-        }}
-      >
-        <NavIcon
-          href="/   "
-          icon={<RiHome2Line className="text-[22px]" />}
-          label="Home"
-          active
-        />
-        <NavIcon
-          href="/products"
-          icon={<CiShop className="text-[22px]" />}
-          label="Shop"
-        />
-        <NavIcon
-          href="/cart"
-          icon={<CiShoppingCart className="text-[22px]" />}
-          label="Cart"
-        />
-        <NavIcon
-          href="#"
-          icon={<CiUser className="text-[22px]" />}
-          label="Profile"
-        />
-      </div>
-
-      {/* DESKTOP SIDE MENU */}
-      <div
-        className="hidden md:flex flex-col gap-4 fixed bottom-[30%] -right-2 border rounded-tl-lg rounded-bl-lg p-4 shadow-lg"
-        style={{
-          backgroundColor: "var(--color-surface)",
-          borderColor: "var(--color-border)",
-        }}
-      >
-        <div className="hover:scale-110 transition-transform duration-150">
-          <Link href="">
-            <FiMessageSquare
-              className="text-xl"
-              style={{ color: "var(--color-text-primary)" }}
-            />
-          </Link>
-        </div>
-        <div className="hover:scale-110 transition-transform duration-150">
-          <Link href="">
-            <MdAddCall
-              className="text-xl"
-              style={{ color: "var(--color-text-primary)" }}
-            />
-          </Link>
-        </div>
-        <div className="hover:scale-110 transition-transform duration-150">
-          <Link href="">
-            <IoSettingsOutline
-              className="text-xl"
-              style={{ color: "var(--color-text-primary)" }}
-            />
-          </Link>
-        </div>
-        <div className="hover:scale-110 transition-transform duration-150">
-          <Link href="">
-            <IoMdHelp
-              className="text-xl"
-              style={{ color: "var(--color-text-primary)" }}
-            />
-          </Link>
+        <div className="fixed bottom-0 left-0 right-0 px-6 py-3 z-50 rounded-t-2xl flex justify-between items-center bg-[var(--color-surface)] border-t border-[var(--color-border)]">
+          <NavIcon
+            href="/"
+            icon={<RiHome2Line className="text-[22px]" />}
+            label="Home"
+            active
+          />
+          <NavIcon
+            href="/products"
+            icon={<CiShop className="text-[22px]" />}
+            label="Shop"
+          />
+          <NavIcon
+            href="/cart"
+            icon={<CiShoppingCart className="text-[22px]" />}
+            label="Cart"
+          />
+          <NavIcon
+            onClick={() => openAuthModal("login")}
+            icon={<CiUser className="text-[22px]" />}
+            label="Profile"
+          />
         </div>
       </div>
     </>
   );
 };
-
-const NavIcon = ({ href, icon, label, active }) => (
-  <div className="flex flex-col justify-center items-center">
-    <Link href={href}>
-      <div
-        style={{
-          color: active
-            ? "var(--color-button-primary)"
-            : "var(--color-text-secondary)",
-        }}
-      >
-        {icon}
-      </div>
-    </Link>
-    <span
-      className="text-xs font-semibold"
-      style={{
-        color: active
-          ? "var(--color-button-primary)"
-          : "var(--color-text-secondary)",
-      }}
-    >
-      {label}
-    </span>
-  </div>
-);
 
 export default Navbar;
