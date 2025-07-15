@@ -68,8 +68,8 @@ export default function ProductInfo({
         {product.category}
       </span>
 
-      <div className="flex flex-row justify-between items-center w-full gap-4">
-        <h1 className="text-xl md:text-2xl font-extrabold text-foreground mb-3 leading-tight">
+      <div className="flex flex-row justify-between items-baseline w-full gap-4">
+        <h1 className="text-lg md:text-2xl font-extrabold text-foreground mb-3 leading-tight">
           {product.name}
         </h1>
 
@@ -109,12 +109,12 @@ export default function ProductInfo({
           </span>
         </div>
       )}
-      <div className="flex items-baseline gap-3 mb-6 p-4 bg-primary/10 rounded-lg">
-        <span className="text-3xl font-bold text-primary-600 dark:text-primary-400">
+      <div className="flex items-center gap-3 mb-6 p-4 bg-primary/10 rounded-lg">
+        <span className="text-xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400">
           ${productPrice.toFixed(2)}
         </span>
         {originalPrice > productPrice && (
-          <span className="text-xl text-muted-foreground line-through">
+          <span className="text-md text-muted-foreground line-through">
             ${originalPrice.toFixed(2)}
           </span>
         )}
@@ -138,7 +138,7 @@ export default function ProductInfo({
               <button
                 key={color.hex}
                 onClick={() => setSelectedColor(color.hex)}
-                className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
+                className={`w-5 h-5 md:w-10 md:h-10 rounded-full border-2 transition-all duration-200 ${
                   selectedColor === color.hex
                     ? "ring-4 ring-offset-2 ring-primary-500 dark:ring-primary-400 border-primary-500 dark:ring-offset-gray-800"
                     : "border-border hover:border-primary-400"
@@ -163,7 +163,7 @@ export default function ProductInfo({
               <button
                 key={size}
                 onClick={() => setSelectedSize(size)}
-                className={`px-5 py-2 rounded-lg border-2 font-medium transition-all duration-200 ${
+                className={`px-3 py-2 text-center items-center md:px-5 md:py-2 rounded-lg border-2 font-medium transition-all duration-200 ${
                   selectedSize === size
                     ? "bg-primary text-primary-foreground border-primary"
                     : "border-border text-foreground hover:bg-muted"

@@ -60,54 +60,7 @@ export default function PaymentDetails({
           className="w-24 p-2 border border-border rounded-lg bg-input text-foreground focus:ring-2 focus:ring-ring"
         />
       </div>
-      <h3 className="mb-1 text-md font-medium text-foreground">
-        Choose Shipping Method:
-      </h3>
-      {/* UPDATED: Changed from grid to flex for better responsiveness */}
-      <ul className="flex flex-col sm:flex-row w-full gap-4">
-        <li className="flex-1">
-          <input
-            type="radio"
-            id="by-air"
-            value="air"
-            className="hidden peer"
-            checked={selectedShipping === "air"}
-            onChange={() => setSelectedShipping("air")}
-          />
-          <label
-            htmlFor="by-air"
-            className="inline-flex items-center justify-between w-full p-3 text-foreground bg-[var(--color-background)] border border-border rounded-lg cursor-pointer peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary hover:bg-muted transition-colors"
-          >
-            <div className="block">
-              <div className="w-full text-lg font-semibold">By Air</div>
-              <div className="w-full text-sm text-muted-foreground">
-                ৳{shippingRates.air}
-              </div>
-            </div>
-          </label>
-        </li>
-        <li className="flex-1">
-          <input
-            type="radio"
-            id="by-sea"
-            value="sea"
-            className="hidden peer"
-            checked={selectedShipping === "sea"}
-            onChange={() => setSelectedShipping("sea")}
-          />
-          <label
-            htmlFor="by-sea"
-            className="inline-flex items-center justify-between w-full p-3 text-foreground bg-[var(--color-background)] border border-border rounded-lg cursor-pointer peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary hover:bg-muted transition-colors"
-          >
-            <div className="block">
-              <div className="w-full text-lg font-semibold">By Sea</div>
-              <div className="w-full text-sm text-muted-foreground">
-                ৳{shippingRates.sea}
-              </div>
-            </div>
-          </label>
-        </li>
-      </ul>
+
       <div className="mt-6 mb-4">
         <h3 className="font-semibold text-lg text-foreground mb-1">
           Apply Coupon:
