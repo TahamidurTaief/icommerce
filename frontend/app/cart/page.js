@@ -13,7 +13,9 @@ import CartView from "../Components/Cart/CartView";
 const page = () => {
   return (
     <>
-    <CartView />
+      <div className="pb-20 md:pb-5">
+        <CartView />
+      </div>
     </>
   );
 };

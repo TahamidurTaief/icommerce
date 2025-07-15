@@ -26,7 +26,7 @@ const CheckoutForm = ({
 
   return (
     <motion.div
-      className="bg-[var(--color-second-bg)] p-6 rounded-xl border border-[var(--color-border)] space-y-8"
+      className="bg-[var(--color-second-bg)] p-6 rounded-xl border border-[var(--color-border)] space-y-8 "
       variants={containerVariants}
       initial="hidden"
       animate="visible"

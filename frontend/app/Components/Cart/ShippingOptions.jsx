@@ -26,7 +26,7 @@ const ShippingOptions = ({ options, selectedId, onSelect }) => {
         Delivery Method
       </h3>
       <motion.div
-        className="space-y-3 flex flex-row w-full gap-5"
+        className="space-y-1 flex flex-col sm:flex-row w-full gap-5"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -35,7 +35,7 @@ const ShippingOptions = ({ options, selectedId, onSelect }) => {
           <motion.div key={option.id} variants={itemVariants}>
             <label
               htmlFor={option.id}
-              className={`flex items-center lato gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+              className={`flex flex-row sm:flex-col items-center lato gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 selectedId === option.id
                   ? "border-[var(--color-button-primary)] bg-blue-500/10"
                   : "border-[var(--color-border)] bg-[var(--color-second-bg)] hover:border-[var(--color-text-secondary)]"
@@ -50,7 +50,7 @@ const ShippingOptions = ({ options, selectedId, onSelect }) => {
                 onChange={() => onSelect(option.id)}
                 className="hidden lato"
               />
-              <div className="flex-1">
+              <div className="flex flex-col">
                 <p className="font-semibold text-[var(--color-text-primary)]">
                   {option.name}
                 </p>
