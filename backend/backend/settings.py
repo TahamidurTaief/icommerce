@@ -38,6 +38,18 @@ AUTH_USER_MODEL = 'users.User'
 # Application definition
 
 INSTALLED_APPS = [
+    "unfold",  # Must be first
+    "unfold.contrib.filters",
+    "unfold.contrib.forms",
+    "unfold.contrib.import_export", # For import/export functionality
+    # "unfold.contrib.IntegerField",
+    # "unfold.contrib.navigations",
+    # "unfold.contrib.pretty_json",
+    # "unfold.contrib.SassCompiler",
+    # "unfold.contrib.TiptapEditor",
+    # "unfold.contrib.tinymce",  # Alternative rich text editor
+
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +60,8 @@ INSTALLED_APPS = [
     # 3rd Party Apps
     'rest_framework',
     'corsheaders',
+    'import_export',
+    'ckeditor',
 
     # Local Apps
     'users',
@@ -112,6 +126,18 @@ CACHES = {
 
 
 
+UNFOLD = {
+    "SITE_TITLE": "ICommerce Administration",
+    "SITE_HEADER": "ICommerce",
+    "SITE_SYMBOL": "store",  # Tabler icon name
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": True,
+    },
+}
+
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -143,12 +169,17 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'mediafiles'
+
+
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

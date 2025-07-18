@@ -10,7 +10,7 @@ class ShopViewSet(viewsets.ModelViewSet):
     - Only authenticated users can create a shop.
     - Only the owner can update or delete their shop.
     """
-    queryset = Shop.objects.all()
+    queryset = Shop.objects.all()   
     serializer_class = ShopSerializer
     # Use IsAuthenticatedOrReadOnly for basic create/edit permissions
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
