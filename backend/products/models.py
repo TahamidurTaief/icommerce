@@ -1,146 +1,49 @@
+# products/models.py
+import uuid
 from django.db import models
-from django.utils.text import slugify
-from core.models import UUIDModel
+from django.conf import settings
+from shops.models import Shop
 
-class Category(UUIDModel):
+class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='categories/', blank=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
+    slug = models.SlugField(unique=True)
     class Meta:
         verbose_name_plural = "Categories"
-        ordering = ['name']
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return self.name
 
-class SubCategory(UUIDModel):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
-    name = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=100)
-    description = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        verbose_name_plural = "Subcategories"
-        unique_together = ('category', 'name')
-        ordering = ['name']
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.category.name} - {self.name}"
-
-class Brand(UUIDModel):
-    name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
-    logo = models.ImageField(upload_to='brands/', blank=True)
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ['name']
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
-
-class Product(UUIDModel):
+class Product(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True)
-    description = models.TextField()
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True, help_text="Supports rich text/HTML from a frontend editor like React-Quill.")
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='products')
-    subcategory = models.ForeignKey(SubCategory, on_delete=models.PROTECT, related_name='products')
-    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
-    sku = models.CharField(max_length=50, unique=True)
     is_active = models.BooleanField(default=True)
-    is_featured = models.BooleanField(default=False)
+    thumbnail = models.ImageField(upload_to='products/thumbnails/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['slug']),
-            models.Index(fields=['sku']),
-            models.Index(fields=['name']),
-        ]
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    @property
-    def current_price(self):
-        return self.discount_price if self.discount_price else self.price
 
     def __str__(self):
         return self.name
 
-class ProductImage(UUIDModel):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='products/')
-    alt_text = models.CharField(max_length=100, blank=True)
-    is_feature = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['is_feature', 'created_at']
-
-    def __str__(self):
-        return f"Image for {self.product.name}"
-
-class ProductAttribute(UUIDModel):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='attributes')
-    name = models.CharField(max_length=100)
-    value = models.CharField(max_length=100)
-
+class ProductSpecification(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='specifications')
+    name = models.CharField(max_length=255, help_text="e.g., Color, Size, Material")
+    value = models.CharField(max_length=255, help_text="e.g., Red, XL, Cotton")
     class Meta:
         unique_together = ('product', 'name')
-
     def __str__(self):
         return f"{self.name}: {self.value}"
 
-class ProductVariant(UUIDModel):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
-    color = models.CharField(max_length=50, blank=True)
-    size = models.CharField(max_length=20, blank=True)
-    stock = models.PositiveIntegerField(default=0)
-    price_override = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    sku = models.CharField(max_length=50, unique=True)
-
+class Review(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
-        unique_together = ('product', 'color', 'size')
-        ordering = ['product', 'color', 'size']
-
-    @property
-    def current_price(self):
-        return self.price_override if self.price_override else self.product.current_price
-
-    def __str__(self):
-        variant_str = []
-        if self.color:
-            variant_str.append(self.color)
-        if self.size:
-            variant_str.append(self.size)
-        return f"{self.product.name} ({' / '.join(variant_str)})"
+        unique_together = ('user', 'product')
