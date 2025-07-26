@@ -32,6 +32,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 
+
 AUTH_USER_MODEL = 'users.User'
 
 
@@ -183,3 +184,14 @@ MEDIA_ROOT = BASE_DIR / 'mediafiles'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://icommerce.onrender.com',
+]
+
+CSRF_COOKIE_SECURE = True  # Ensures the CSRF cookie is only sent over HTTPS
+CSRF_COOKIE_HTTPONLY = True  # Prevents JavaScript access to CSRF cookie
+
+
+
