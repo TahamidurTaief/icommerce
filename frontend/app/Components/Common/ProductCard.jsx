@@ -8,42 +8,48 @@ import { useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import SuccessModal from "./SuccessModal"; // UPDATED: Import the modal
+import { useModal } from "@/app/contexts/ModalContext";
 
 const ProductCard = ({ productData }) => {
-  const colors = productData?.colors || [];
-  const sizes = Array.isArray(productData?.sizes)
-    ? productData.sizes
-    : typeof productData?.sizes === "string"
-    ? productData.sizes.split(" ")
-    : [];
-  const originalPrice = productData?.originalPrice || productData?.price || 0;
-  const price = productData?.price || 0;
+  const { showModal } = useModal();
+  
+  // API থেকে আসা ডেটা অনুযায়ী ভেরিয়েবল সেট করুন
+  const colors = productData?.specifications?.filter(spec => spec.name.toLowerCase() === 'color') || [];
+  const sizes = productData?.specifications?.filter(spec => spec.name.toLowerCase() === 'size').map(s => s.value) || [];
+
+  // ## BUG FIX START ##
+  // Django থেকে আসা প্রাইস স্ট্রিংকে নাম্বারে রূপান্তর করা হয়েছে
+  const originalPrice = parseFloat(productData?.price || 0);
+  const price = parseFloat(productData?.discount_price || productData?.price || 0);
+  // ## BUG FIX END ##
+
   const discount =
     originalPrice > price
       ? Math.round(((originalPrice - price) / originalPrice) * 100)
       : 0;
+  
+  const inStock = productData?.stock > 0;
 
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(colors?.[0]?.hex || null);
+  const [selectedColor, setSelectedColor] = useState(colors?.[0]?.value || null);
   const [selectedSize, setSelectedSize] = useState(sizes?.[0] || null);
-  const [selectedImage, setSelectedImage] = useState(productData?.imageUrl);
+  const [selectedImage, setSelectedImage] = useState(productData?.thumbnail_url); 
   const cardRef = useRef(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
-  const [isSuccessModalOpen, setSuccessModalOpen] = useState(false); // UPDATED: Modal state
 
   const productUrl = `/products/${productData?.slug}`;
 
-  // UPDATED: handleAddToCart function now saves to localStorage and opens modal
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!productData?.inStock) {
-      toast.error("This product is out of stock", {
-        position: "bottom-right",
-        autoClose: 2000,
+    if (!inStock) {
+      showModal({
+        status: 'warning',
+        title: 'Out of Stock',
+        message: 'Sorry, this product is currently unavailable.',
+        primaryActionText: 'Got it',
       });
       return;
     }
@@ -54,9 +60,9 @@ const ProductCard = ({ productData }) => {
       }`,
       slug: productData.slug,
       name: productData.name,
-      price: productData.price,
-      imageUrl: productData.imageUrl,
-      quantity: 1, // Default quantity is 1 from product card
+      price: price,
+      imageUrl: productData.thumbnail_url,
+      quantity: 1,
       selectedColor: selectedColor,
       selectedSize: selectedSize,
     };
@@ -64,7 +70,6 @@ const ProductCard = ({ productData }) => {
     const existingCartItems = JSON.parse(
       localStorage.getItem("cartItems") || "[]"
     );
-
     const existingItemIndex = existingCartItems.findIndex(
       (item) => item.id === itemToAdd.id
     );
@@ -76,22 +81,27 @@ const ProductCard = ({ productData }) => {
     }
     localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
 
-    setSuccessModalOpen(true);
+    showModal({
+        status: 'success',
+        title: 'Success!',
+        message: 'Your item has been successfully added to the cart.',
+        primaryActionText: 'Go to Cart',
+        onPrimaryAction: () => {
+            window.location.href = '/cart';
+        },
+        secondaryActionText: 'Continue Shopping'
+    });
   };
 
   const handleAddToWishlist = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
     setIsWishlisted(!isWishlisted);
     toast.info(
       !isWishlisted
         ? `${productData?.name} added to wishlist!`
         : `${productData?.name} removed from wishlist!`,
-      {
-        position: "bottom-right",
-        autoClose: 2000,
-      }
+      { position: "bottom-right", autoClose: 2000 }
     );
   };
 
@@ -106,7 +116,7 @@ const ProductCard = ({ productData }) => {
     setQuickViewOpen(false);
     document.body.style.overflow = "auto";
   };
-
+  
   const handleMouseMove = (e) => {
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
@@ -179,7 +189,7 @@ const ProductCard = ({ productData }) => {
             </span>
           )}
 
-          {!productData?.inStock && (
+          {!inStock && (
             <span className="absolute top-3 right-3 bg-gray-600 text-white text-xs font-bold px-2 py-1 rounded-full z-10 shadow-md">
               Out of Stock
             </span>
@@ -187,12 +197,13 @@ const ProductCard = ({ productData }) => {
 
           <div className="relative aspect-square overflow-hidden rounded-lg mb-3">
             <Image
-              src={productData?.imageUrl}
-              alt={productData?.name}
+              src={productData?.thumbnail_url || '/img/default-product.jpg'}
+              alt={productData?.name || 'Product Image'}
               fill
               className="object-cover rounded-lg transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               priority={false}
+              onError={(e) => { e.target.onerror = null; e.target.src='/img/default-product.jpg'; }}
             />
 
             <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-xs">
@@ -209,7 +220,7 @@ const ProductCard = ({ productData }) => {
                 onClick={handleAddToWishlist}
                 className={`p-2.5 rounded-full shadow-lg transition-all duration-200 ${
                   isWishlisted
-                    ? "bg-red-500/90 text-gray-800"
+                    ? "bg-red-500/90 text-white"
                     : "bg-white/90 hover:bg-white"
                 }`}
                 aria-label="Add to wishlist"
@@ -222,20 +233,20 @@ const ProductCard = ({ productData }) => {
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 500, damping: 15 }}
                 >
-                  <LuHeart className="text-lg text-gray-800" />
+                  <LuHeart className={`text-lg ${isWishlisted ? 'text-white fill-current' : 'text-gray-800'}`} />
                 </motion.div>
               </motion.button>
               <motion.button
                 onClick={handleAddToCart}
-                disabled={!productData?.inStock}
+                disabled={!inStock}
                 className={`p-2.5 rounded-full shadow-lg transition-all duration-200 ${
-                  productData?.inStock
+                  inStock
                     ? "bg-white/90 hover:bg-white"
                     : "bg-gray-300 cursor-not-allowed"
                 }`}
                 aria-label="Add to cart"
-                whileHover={productData?.inStock ? { scale: 1.1 } : {}}
-                whileTap={productData?.inStock ? { scale: 0.9 } : {}}
+                whileHover={inStock ? { scale: 1.1 } : {}}
+                whileTap={inStock ? { scale: 0.9 } : {}}
               >
                 <LuShoppingCart className="text-lg text-gray-800" />
               </motion.button>
@@ -244,7 +255,7 @@ const ProductCard = ({ productData }) => {
 
           <div className="flex-grow">
             <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              {productData?.category}
+              {productData?.sub_category?.name}
             </span>
             <h3 className="font-medium text-gray-900 dark:text-white mt-1 mb-2 line-clamp-2 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
               {productData?.name}
@@ -260,64 +271,9 @@ const ProductCard = ({ productData }) => {
                 </span>
               )}
             </div>
-
-            {colors?.length > 0 && (
-              <div className="flex gap-2 mt-3">
-                {colors.map((color) => (
-                  <motion.button
-                    key={color?.name}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setSelectedColor(color.hex);
-                    }}
-                    className={`w-5 h-5 rounded-full border-2 transition-all ${
-                      selectedColor === color.hex
-                        ? "ring-2 ring-offset-1 ring-gray-400"
-                        : "border-gray-200 dark:border-gray-600 hover:ring-2 hover:ring-offset-1 hover:ring-gray-300"
-                    }`}
-                    style={{
-                      backgroundColor: color.hex,
-                    }}
-                    aria-label={color?.name}
-                    title={color?.name}
-                    whileTap={{ scale: 0.9 }}
-                  />
-                ))}
-              </div>
-            )}
-
-            {sizes?.length > 0 && (
-              <div className="flex gap-2 mt-3 flex-wrap">
-                {sizes.map((size) => (
-                  <motion.button
-                    key={size}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setSelectedSize(size);
-                    }}
-                    className={`px-2.5 py-1 text-xs rounded-md border ${
-                      selectedSize === size
-                        ? "bg-primary-600 text-white border-primary-600"
-                        : "border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {size}
-                  </motion.button>
-                ))}
-              </div>
-            )}
           </div>
         </motion.div>
       </Link>
-
-      {/* UPDATED: Render the Success Modal */}
-      <SuccessModal
-        isOpen={isSuccessModalOpen}
-        onClose={() => setSuccessModalOpen(false)}
-      />
 
       <AnimatePresence>
         {quickViewOpen && (
@@ -349,17 +305,18 @@ const ProductCard = ({ productData }) => {
                 <div>
                   <div className="relative aspect-square mb-4 rounded-xl overflow-hidden">
                     <Image
-                      src={selectedImage}
-                      alt={productData?.name}
+                      src={selectedImage || '/img/default-product.jpg'}
+                      alt={productData?.name || 'Product Image'}
                       fill
                       className="object-cover rounded-xl"
                       priority
+                       onError={(e) => { e.target.onerror = null; e.target.src='/img/default-product.jpg'; }}
                     />
                   </div>
                   <div className="flex gap-2 overflow-x-auto pb-2">
                     {[
-                      productData?.imageUrl,
-                      ...(productData?.additionalImages || []),
+                      productData?.thumbnail_url,
+                      ...(productData?.additional_images?.map(img => img.image) || []),
                     ].map((img, idx) => (
                       <motion.button
                         key={idx}
@@ -370,15 +327,16 @@ const ProductCard = ({ productData }) => {
                         whileTap={{ scale: 0.95 }}
                         className={`relative h-16 w-16 min-w-[4rem] rounded-md overflow-hidden border-2 transition-all ${
                           selectedImage === img
-                            ? "border-primary-600"
+                            ? "border-sky-500"
                             : "border-transparent hover:border-gray-300"
                         }`}
                       >
                         <Image
-                          src={img}
+                          src={img || '/img/default-product.jpg'}
                           alt={`Thumbnail ${idx + 1}`}
                           fill
                           className="object-cover"
+                           onError={(e) => { e.target.onerror = null; e.target.src='/img/default-product.jpg'; }}
                         />
                       </motion.button>
                     ))}
@@ -390,7 +348,7 @@ const ProductCard = ({ productData }) => {
                     {productData?.name}
                   </h2>
                   <span className="text-sm text-gray-500 dark:text-gray-400 uppercase">
-                    {productData?.category}
+                    {productData?.sub_category?.name}
                   </span>
 
                   <div className="mb-4 mt-4">
@@ -416,22 +374,22 @@ const ProductCard = ({ productData }) => {
                       <div className="flex gap-2">
                         {colors.map((color) => (
                           <motion.button
-                            key={color?.name}
+                            key={color?.value}
                             onClick={(e) => {
                               e.preventDefault();
-                              setSelectedColor(color.hex);
+                              setSelectedColor(color.value);
                             }}
                             whileTap={{ scale: 0.9 }}
                             className={`w-8 h-8 rounded-full border-2 transition-all ${
-                              selectedColor === color.hex
+                              selectedColor === color.value
                                 ? "ring-2 ring-offset-1 ring-gray-400"
                                 : "border-gray-200 dark:border-gray-600"
                             }`}
                             style={{
-                              backgroundColor: color.hex,
+                              backgroundColor: color.value.toLowerCase(),
                             }}
-                            aria-label={color?.name}
-                            title={color?.name}
+                            aria-label={color?.value}
+                            title={color?.value}
                           />
                         ))}
                       </div>
@@ -454,7 +412,7 @@ const ProductCard = ({ productData }) => {
                             whileTap={{ scale: 0.95 }}
                             className={`px-3 py-1.5 text-sm rounded-md border ${
                               selectedSize === size
-                                ? "bg-primary-600 text-white border-primary-600"
+                                ? "bg-sky-600 text-white border-sky-600"
                                 : "border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                             }`}
                           >
@@ -472,15 +430,15 @@ const ProductCard = ({ productData }) => {
                         handleAddToCart(e);
                         closeQuickView();
                       }}
-                      disabled={!productData?.inStock}
-                      whileTap={productData?.inStock ? { scale: 0.98 } : {}}
+                      disabled={!inStock}
+                      whileTap={inStock ? { scale: 0.98 } : {}}
                       className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
-                        productData?.inStock
-                          ? "bg-primary-600 hover:bg-primary-700 text-white"
+                        inStock
+                          ? "bg-sky-600 hover:bg-sky-700 text-white"
                           : "bg-gray-300 text-gray-500 cursor-not-allowed"
                       }`}
                     >
-                      {productData?.inStock ? "Add to Cart" : "Out of Stock"}
+                      {inStock ? "Add to Cart" : "Out of Stock"}
                     </motion.button>
                     <motion.button
                       onClick={(e) => {
@@ -512,3 +470,4 @@ const ProductCard = ({ productData }) => {
 };
 
 export default ProductCard;
+

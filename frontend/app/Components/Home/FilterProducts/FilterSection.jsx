@@ -3,7 +3,6 @@ import React, { useState, useCallback, useEffect } from "react";
 import { VscSettings, VscChromeClose } from "react-icons/vsc";
 import Link from "next/link";
 
-// SVG Icon for the dropdowns
 const ChevronDownIcon = () => (
   <svg
     className="h-5 w-5 text-gray-400"
@@ -19,7 +18,7 @@ const ChevronDownIcon = () => (
   </svg>
 );
 
-const FilterSection = ({ onFilterChange }) => {
+const FilterSection = ({ categories = [], onFilterChange }) => {
   const MAX_PRICE = 1000;
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
@@ -28,45 +27,27 @@ const FilterSection = ({ onFilterChange }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const categories = [
-    { id: "electronics", name: "Electronics" },
-    { id: "apparel", name: "Apparel & Fashion" },
-    { id: "homegoods", name: "Home & Garden" },
-    { id: "beauty", name: "Health & Beauty" },
-    { id: "sports", name: "Sports & Outdoors" },
-    { id: "T-Shirt", name: "T-Shirt" },
-    { id: "Jeans", name: "Jeans" },
-    { id: "Jacket", name: "Jacket" },
-  ];
-
-  // Apply filters when any filter changes
   useEffect(() => {
     const filters = {
       category: selectedCategory,
       priceRange: { min: minPrice, max: maxPrice },
       sort: sortOrder,
     };
-    onFilterChange(filters);
+    if (onFilterChange) {
+      onFilterChange(filters);
+    }
   }, [selectedCategory, minPrice, maxPrice, sortOrder, onFilterChange]);
 
-  // Handlers to ensure min value doesn't cross max value and vice-versa
-  const handleMinPriceChange = useCallback(
-    (e) => {
-      const value = Math.min(Number(e.target.value), maxPrice - 1);
-      setMinPrice(value);
-    },
-    [maxPrice]
-  );
+  const handleMinPriceChange = useCallback((e) => {
+    const value = Math.min(Number(e.target.value), maxPrice - 1);
+    setMinPrice(value);
+  }, [maxPrice]);
 
-  const handleMaxPriceChange = useCallback(
-    (e) => {
-      const value = Math.max(Number(e.target.value), minPrice + 1);
-      setMaxPrice(value);
-    },
-    [minPrice]
-  );
+  const handleMaxPriceChange = useCallback((e) => {
+    const value = Math.max(Number(e.target.value), minPrice + 1);
+    setMaxPrice(value);
+  }, [minPrice]);
 
-  // Calculate positions for the range slider progress bar
   const minPos = (minPrice / MAX_PRICE) * 100;
   const maxPos = (maxPrice / MAX_PRICE) * 100;
 
@@ -103,17 +84,17 @@ const FilterSection = ({ onFilterChange }) => {
 
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [isModalOpen]);
+  }, [isModalOpen, toggleModal]);
 
   return (
     <>
       <section className="container mx-auto pt-8 md:pb-4">
         <div className="flex bg-white dark:bg-gray-950 shadow-md py-4 px-5 rounded-lg flex-row md:flex-row justify-between items-start md:items-center align-center gap-6 mb-8">
-          <Link href="/products" className="w-full">
+          <div className="w-full">
             <h2 className="text-xl md:text-xl lg:text-3xl xl:text-4xl font-bold text-[var(--color-text-primary)] w-full">
               Explore <span className="text-sky-500">Products</span>
             </h2>
-          </Link>
+          </div>
           <div className="justify-end flex md:hidden">
             <button
               onClick={toggleModal}
@@ -123,17 +104,9 @@ const FilterSection = ({ onFilterChange }) => {
               <VscSettings className="text-2xl text-[var(--color-text-primary)]" />
             </button>
           </div>
-          {/* Filter Controls Panel */}
           <div className="w-full hidden md:flex">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Category Filter */}
               <div className="flex flex-col gap-2">
-                {/* <label
-                  htmlFor="category-select"
-                  className="text-sm font-semibold text-slate-600 dark:text-slate-300"
-                >
-                  Category
-                </label> */}
                 <div className="relative">
                   <select
                     id="category-select"
@@ -143,7 +116,7 @@ const FilterSection = ({ onFilterChange }) => {
                   >
                     <option value="">All Categories</option>
                     {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
+                      <option key={cat.id} value={cat.slug}>
                         {cat.name}
                       </option>
                     ))}
@@ -154,7 +127,6 @@ const FilterSection = ({ onFilterChange }) => {
                 </div>
               </div>
 
-              {/* Price Range Filter */}
               <div className="flex flex-col gap-2 w-full">
                 <div className="relative h-12 bg-slate-50 dark:bg-slate-800 px-2 py-5 border border-slate-300 dark:border-slate-600 rounded-lg flex items-center">
                   <div className="relative w-full h-1.5 mt-4 bg-slate-200 dark:bg-slate-600 rounded-full">
@@ -194,14 +166,7 @@ const FilterSection = ({ onFilterChange }) => {
                 </div>
               </div>
 
-              {/* Sort Order Filter */}
               <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
-                {/* <label
-                  htmlFor="sort-order"
-                  className="text-sm font-semibold text-slate-600 dark:text-slate-300"
-                >
-                  Sort By
-                </label> */}
                 <div className="relative">
                   <select
                     id="sort-order"
@@ -234,7 +199,6 @@ const FilterSection = ({ onFilterChange }) => {
         </div>
       </section>
 
-      {/* Mobile Filter Modal */}
       {isModalOpen && (
         <div
           className="fixed inset-0 z-40 flex items-end transition-opacity duration-300"
@@ -251,7 +215,7 @@ const FilterSection = ({ onFilterChange }) => {
             }`}
             style={{
               maxHeight: "70vh",
-              marginBottom: "40px", // Space for mobile bottom navigation
+              marginBottom: "40px",
               paddingBottom: "25px",
             }}
           >
@@ -272,7 +236,6 @@ const FilterSection = ({ onFilterChange }) => {
               className="overflow-y-auto p-6"
               style={{ maxHeight: "calc(70vh - 72px)" }}
             >
-              {/* Category Filter */}
               <div className="flex flex-col gap-3 mb-6">
                 <label
                   htmlFor="mobile-category-select"
@@ -289,7 +252,7 @@ const FilterSection = ({ onFilterChange }) => {
                   >
                     <option value="">All Categories</option>
                     {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
+                      <option key={cat.id} value={cat.slug}>
                         {cat.name}
                       </option>
                     ))}
@@ -299,8 +262,7 @@ const FilterSection = ({ onFilterChange }) => {
                   </div>
                 </div>
               </div>
-
-              {/* Price Range Filter */}
+              
               <div className="flex flex-col gap-3 mb-6">
                 <div className="relative h-16 bg-slate-50 dark:bg-slate-800 px-2 py-5 mt-1 border border-slate-300 dark:border-slate-600 rounded-lg flex items-center">
                   <div className="relative w-full h-1.5 bg-slate-200 dark:bg-slate-600 rounded-full">
@@ -339,8 +301,7 @@ const FilterSection = ({ onFilterChange }) => {
                   />
                 </div>
               </div>
-
-              {/* Sort Order Filter */}
+              
               <div className="flex flex-col gap-3 mb-8">
                 <label
                   htmlFor="mobile-sort-order"
@@ -366,8 +327,7 @@ const FilterSection = ({ onFilterChange }) => {
                   </div>
                 </div>
               </div>
-
-              {/* Apply Filters Button */}
+              
               <button
                 onClick={applyFilters}
                 className="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-lg transition-colors duration-200"
@@ -378,64 +338,6 @@ const FilterSection = ({ onFilterChange }) => {
           </div>
         </div>
       )}
-
-      {/* Style block for the custom price range slider thumbs */}
-      <style jsx>{`
-        .price-range-thumb {
-          -webkit-appearance: none;
-          -moz-appearance: none;
-          appearance: none;
-          width: 100%;
-          height: 1.5rem;
-          background: transparent;
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          pointer-events: none;
-        }
-
-        .price-range-thumb::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 1.25rem;
-          height: 1.25rem;
-          background-color: #fff;
-          border: 3px solid #0ea5e9;
-          border-radius: 50%;
-          cursor: pointer;
-          pointer-events: auto;
-          transition: transform 0.15s ease-out;
-        }
-
-        .price-range-thumb::-webkit-slider-thumb:hover {
-          transform: scale(1.1);
-        }
-
-        .price-range-thumb::-webkit-slider-thumb:active {
-          transform: scale(0.95);
-          box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2);
-        }
-
-        .price-range-thumb::-moz-range-thumb {
-          width: 1.25rem;
-          height: 1.25rem;
-          background-color: #fff;
-          border: 3px solid #0ea5e9;
-          border-radius: 50%;
-          cursor: pointer;
-          pointer-events: auto;
-          transition: transform 0.15s ease-out;
-        }
-
-        .price-range-thumb::-moz-range-thumb:hover {
-          transform: scale(1.1);
-        }
-
-        .price-range-thumb::-moz-range-thumb:active {
-          transform: scale(0.95);
-          box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2);
-        }
-      `}</style>
     </>
   );
 };

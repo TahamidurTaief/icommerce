@@ -7,6 +7,8 @@ import AuthModal from "@/app/Components/Auth/AuthModal"; // Import AuthModal
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
+import { ModalProvider } from "@/app/contexts/ModalContext"; 
+
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -37,39 +39,27 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${lato.variable} ${poppins.variable} ${raleway.variable} font-lato w-full`}
-        style={{ margin: 0 }}
-      >
-        {/* FIXED: AuthProvider now wraps everything, making the context available globally. */}
+      <body className="...">
         <AuthProvider>
           <ThemeProvider>
-            <div className="bg-[var(--color-background)] min-h-screen">
-              <Navbar />
-              <main className="w-full">
-                <div className="w-full">{children}</div>
-              </main>
-
-              {/* AuthModal is rendered here globally but is only visible when triggered */}
-              <AuthModal />
-
-              {/* ToastContainer for sitewide notifications */}
-              <ToastContainer
-                position="bottom-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="dark"
-              />
-            </div>
+            <ModalProvider> {/* <-- ModalProvider যোগ করুন */}
+              <div className="bg-[var(--color-background)] min-h-screen">
+                <Navbar />
+                <main className="w-full">
+                  <div className="w-full">{children}</div>
+                </main>
+                <AuthModal />
+                <ToastContainer
+                  position="bottom-right"
+                  autoClose={5000}
+                  theme="dark"
+                />
+              </div>
+            </ModalProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
   );
 }
+
