@@ -2,73 +2,55 @@
 import React, { useState, useEffect, useCallback } from "react";
 import FilterSection from "./FilterSection";
 import FilteredProduct from "./FilteredProduct";
+import { getProducts } from "@/app/lib/api"; // Updated import
 
-const FilterProducts = ({ products, categories }) => {
-  const [filteredProducts, setFilteredProducts] = useState(products);
+const FilterProducts = ({ initialProducts, categories }) => {
+  const [products, setProducts] = useState(initialProducts);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // This state will hold the active filters
   const [filters, setFilters] = useState({
     category: "",
     priceRange: { min: 0, max: 1000 },
     sort: "",
   });
 
-  const applyFilters = useCallback(() => {
-    let result = [...products];
-
-    // ক্যাটেগরি ফিল্টার (slug অনুযায়ী)
-    if (filters.category) {
-      result = result.filter(
-        (product) => product.sub_category?.category?.slug === filters.category
-      );
-    }
-
-    // প্রাইস রেঞ্জ ফিল্টার
-    result = result.filter(
-      (product) =>
-        parseFloat(product.price) >= filters.priceRange.min &&
-        parseFloat(product.price) <= filters.priceRange.max
-    );
-
-    // সর্টিং
-    if (filters.sort) {
-      switch (filters.sort) {
-        case "price-asc":
-          result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-          break;
-        case "price-desc":
-          result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-          break;
-        case "name-asc":
-          result.sort((a, b) => a.name.localeCompare(b.name));
-          break;
-        case "name-desc":
-          result.sort((a, b) => b.name.localeCompare(a.name));
-          break;
-        default:
-          break;
-      }
-    }
-
-    setFilteredProducts(result);
-  }, [filters, products]);
-
-  useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
-
-  // মূল products prop পরিবর্তন হলে filteredProducts আপডেট হবে
-  useEffect(() => {
-    setFilteredProducts(products);
-  }, [products]);
-
+  // This function is called when any filter changes
   const handleFilterChange = useCallback((newFilters) => {
     setFilters(newFilters);
   }, []);
 
+  // useEffect to fetch products when filters change
+  useEffect(() => {
+    const fetchFilteredProducts = async () => {
+      setIsLoading(true);
+      
+      const searchParams = {
+        category: filters.category,
+        min_price: filters.priceRange.min,
+        max_price: filters.priceRange.max,
+        ordering: filters.sort,
+      };
+
+      const newProductsData = await getProducts(searchParams);
+      setProducts(newProductsData?.results || []);
+      
+      setIsLoading(false);
+    };
+    
+    // We don't need to fetch on initial render if initialProducts exist
+    if(filters.category || filters.priceRange.min > 0 || filters.priceRange.max < 1000 || filters.sort) {
+        fetchFilteredProducts();
+    } else {
+        setProducts(initialProducts); // Reset to initial if filters are cleared
+    }
+
+  }, [filters, initialProducts]);
+
   return (
     <div className="py-10 md:py-16">
-      {/* categories prop টি FilterSection এ পাস করা হচ্ছে */}
       <FilterSection categories={categories} onFilterChange={handleFilterChange} />
-      <FilteredProduct productData={filteredProducts} />
+      <FilteredProduct productData={products} isLoading={isLoading} />
     </div>
   );
 };

@@ -27,6 +27,7 @@ const FilterSection = ({ categories = [], onFilterChange }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // This effect calls the parent's onFilterChange function whenever a filter state changes.
   useEffect(() => {
     const filters = {
       category: selectedCategory,
@@ -51,7 +52,7 @@ const FilterSection = ({ categories = [], onFilterChange }) => {
   const minPos = (minPrice / MAX_PRICE) * 100;
   const maxPos = (maxPrice / MAX_PRICE) * 100;
 
-  const toggleModal = () => {
+  const toggleModal = useCallback(() => {
     if (!isModalOpen) {
       setIsModalOpen(true);
       setIsAnimating(true);
@@ -63,7 +64,7 @@ const FilterSection = ({ categories = [], onFilterChange }) => {
         document.body.style.overflow = "";
       }, 300);
     }
-  };
+  }, [isModalOpen]);
 
   const handleOutsideClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -175,10 +176,10 @@ const FilterSection = ({ categories = [], onFilterChange }) => {
                     className="w-full pl-4 pr-10 py-2.5 text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                   >
                     <option value="">Relevance</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="name-asc">Name: A-Z</option>
-                    <option value="name-desc">Name: Z-A</option>
+                    <option value="price">Price: Low to High</option>
+                    <option value="-price">Price: High to Low</option>
+                    <option value="name">Name: A-Z</option>
+                    <option value="-name">Name: Z-A</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
                     <ChevronDownIcon />
@@ -317,10 +318,10 @@ const FilterSection = ({ categories = [], onFilterChange }) => {
                     className="w-full pl-4 pr-10 py-3 text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                   >
                     <option value="">Relevance</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="name-asc">Name: A-Z</option>
-                    <option value="name-desc">Name: Z-A</option>
+                    <option value="price">Price: Low to High</option>
+                    <option value="-price">Price: High to Low</option>
+                    <option value="name">Name: A-Z</option>
+                    <option value="-name">Name: Z-A</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
                     <ChevronDownIcon />

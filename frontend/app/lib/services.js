@@ -1,57 +1,82 @@
-// frontend/app/lib/services.js
-// এই ফাইলটি API থেকে ডেটা আনার জন্য কেন্দ্রীয় হাব হিসেবে কাজ করবে
+  // frontend/app/lib/services.js
+  import { cache } from 'react';
 
-import { cache } from 'react';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
-// API এর বেস URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+  /**
+   * Generic API fetcher function.
+   * @param {string} endpoint - The API endpoint to call.
+   * @param {object} options - Fetch options.
+   * @returns {Promise<any>} - The JSON response from the API.
+   */
+  export async function fetchAPI(endpoint, options = {}) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        // Default to no-store unless specified otherwise.
+        cache: 'no-store',
+        ...options,
+      });
 
-/**
- * Django API থেকে ডেটা আনার জন্য একটি জেনেরিক ফাংশন।
- * @param {string} endpoint - API এন্ডপয়েন্ট (e.g., '/api/products/').
- * @param {object} options - অতিরিক্ত fetch অপশন।
- * @returns {Promise<any>} - API থেকে প্রাপ্ত JSON ডেটা।
- */
-async function fetchAPI(endpoint, options = {}) {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      cache: 'no-store', // ডিফল্টভাবে ক্যাশ করা হবে না
-      ...options,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`API Error for ${endpoint}: ${response.status}`, errorText);
-      throw new Error(`API call failed for ${endpoint}`);
+      if (!response.ok) {
+        // For client-side debugging, log the detailed error
+        if (typeof window !== 'undefined') {
+          console.error(`API Error Response for ${endpoint}:`, await response.text());
+        }
+        throw new Error(`API call failed for endpoint: ${endpoint} with status: ${response.status}`);
+      }
+      
+      if (response.status === 204) {
+        return null;
+      }
+      
+      return await response.json();
+    } catch (error) {
+      // This will catch network errors (like "Failed to fetch") and errors thrown above.
+      console.error(`API Fetch Exception: ${error.message}`);
+      // Return a structured error or null to be handled by the caller.
+      return { error: error.message, data: null };
     }
-
-    if (response.status === 204) {
-      return null;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error(`API Fetch Error: ${error.message}`);
-    return null; // সমস্যা হলে null রিটার্ন করবে
   }
-}
 
-/**
- * প্রোডাক্ট ডেটা আনার ফাংশন।
- * @param {object} params - কুয়েরি প্যারামিটার (e.g., { page_size: 12 }).
- */
-export const getProducts = cache(async (params = {}) => {
-  const query = new URLSearchParams(params).toString();
-  const data = await fetchAPI(`/api/products/?${query}`);
-  // পেজিনেশন করা রেসপন্স থেকে শুধুমাত্র প্রোডাক্টের তালিকা রিটার্ন করা হচ্ছে
-  return data?.results || []; 
-});
+  /**
+   * Fetches all product categories.
+   * Cached for one hour as they change infrequently.
+   */
+  export const getCategories = cache(async () => {
+    return fetchAPI('/api/categories/', { next: { revalidate: 3600 } });
+  });
 
-/**
- * ক্যাটেগরি ডেটা আনার ফাংশন।
- */
-export const getCategories = cache(async () => {
-  // ক্যাটেগরি খুব বেশি পরিবর্তন হয় না, তাই এক ঘণ্টার জন্য ক্যাশ করা হলো
-  return fetchAPI('/api/categories/', { next: { revalidate: 3600 } });
-});
+  /**
+   * Fetches products based on search/filter parameters.
+   * This function is used for dynamic, client-side filtering.
+   * @param {object} searchParams - The filter parameters.
+   */
+  export const getProducts = async (searchParams = {}) => {
+    const params = new URLSearchParams();
 
+    if (searchParams.category) {
+      params.append('category', searchParams.category);
+    }
+    if (searchParams.min_price) {
+      params.append('min_price', searchParams.min_price);
+    }
+    if (searchParams.max_price) {
+      params.append('max_price', searchParams.max_price);
+    }
+    if (searchParams.ordering) {
+      params.append('ordering', searchParams.ordering);
+    }
+
+    const queryString = params.toString();
+    const endpoint = `/api/products/?${queryString}`;
+    
+    return fetchAPI(endpoint);
+  };
+
+  /**
+   * Fetches the initial set of products for the home page (server-side).
+   * Fetches only the first 12 products.
+   */
+  export const getInitialHomeProducts = cache(async () => {
+      return fetchAPI('/api/products/?limit=12');
+  });
