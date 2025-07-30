@@ -1,5 +1,5 @@
 import HomePage from "@/app/Components/Home/HomePage";
-import { getInitialHomeProducts, getCategories } from "@/app/lib/services";
+import { getInitialHomeProducts, getCategories } from "@/app/lib/api";
 
 export default async function Home() {
   // Fetch initial data on the server for the first page load

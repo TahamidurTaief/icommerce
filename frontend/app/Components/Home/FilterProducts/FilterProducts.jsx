@@ -11,7 +11,7 @@ const FilterProducts = ({ initialProducts, categories }) => {
   // This state will hold the active filters
   const [filters, setFilters] = useState({
     category: "",
-    priceRange: { min: 0, max: 1000 },
+    priceRange: { min: 0, max: 10000 },
     sort: "",
   });
 

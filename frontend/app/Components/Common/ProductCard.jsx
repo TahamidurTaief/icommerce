@@ -175,11 +175,11 @@ const ProductCard = ({ productData }) => {
             scale: 1.03,
             transition: { type: "spring", stiffness: 300 },
           }}
-          style={{
-            rotateX: `${rotation.x}deg`,
-            rotateY: `${rotation.y}deg`,
-            perspective: "600px",
-          }}
+          // style={{
+          //   rotateX: `${rotation.x}deg`,
+          //   rotateY: `${rotation.y}deg`,
+          //   perspective: "600px",
+          // }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >

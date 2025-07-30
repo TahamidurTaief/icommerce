@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'import_export',
     'ckeditor',
+    'django_filters',
 
     # Local Apps
     'users',
@@ -185,9 +186,12 @@ MEDIA_ROOT = BASE_DIR / 'mediafiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://icommerce.onrender.com',
+
 ]
 
 CSRF_COOKIE_SECURE = True  # Ensures the CSRF cookie is only sent over HTTPS
@@ -195,3 +199,6 @@ CSRF_COOKIE_HTTPONLY = True  # Prevents JavaScript access to CSRF cookie
 
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}
