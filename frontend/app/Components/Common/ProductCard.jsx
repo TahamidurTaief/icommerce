@@ -2,274 +2,109 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { LuShoppingCart, LuHeart } from "react-icons/lu";
-import { HiOutlineEye } from "react-icons/hi2";
-import { useState, useRef } from "react";
-import { toast } from "react-toastify";
+import { LuShoppingCart, LuHeart, LuEye } from "react-icons/lu";
 import { FiX } from "react-icons/fi";
+import { useState } from "react";
+import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import { useModal } from "@/app/contexts/ModalContext";
 
+// This is the new, redesigned ProductCard component
 const ProductCard = ({ productData }) => {
   const { showModal } = useModal();
   
-  // API থেকে আসা ডেটা অনুযায়ী ভেরিয়েবল সেট করুন
-  const colors = productData?.specifications?.filter(spec => spec.name.toLowerCase() === 'color') || [];
-  const sizes = productData?.specifications?.filter(spec => spec.name.toLowerCase() === 'size').map(s => s.value) || [];
+  const colors = productData?.colors || [];
+  const sizes = productData?.sizes || [];
 
-  // ## BUG FIX START ##
-  // Django থেকে আসা প্রাইস স্ট্রিংকে নাম্বারে রূপান্তর করা হয়েছে
   const originalPrice = parseFloat(productData?.price || 0);
   const price = parseFloat(productData?.discount_price || productData?.price || 0);
-  // ## BUG FIX END ##
-
-  const discount =
-    originalPrice > price
-      ? Math.round(((originalPrice - price) / originalPrice) * 100)
-      : 0;
   
+  const discount = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
   const inStock = productData?.stock > 0;
 
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(colors?.[0]?.value || null);
+  const [selectedColor, setSelectedColor] = useState(colors?.[0] || null);
   const [selectedSize, setSelectedSize] = useState(sizes?.[0] || null);
-  const [selectedImage, setSelectedImage] = useState(productData?.thumbnail_url); 
-  const cardRef = useRef(null);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  
+  const allImages = [productData?.thumbnail_url, ...(productData?.additional_images?.map(img => img.image) || [])].filter(Boolean);
+  const [selectedImage, setSelectedImage] = useState(allImages[0]); 
 
   const productUrl = `/products/${productData?.slug}`;
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
-    if (!inStock) {
-      showModal({
-        status: 'warning',
-        title: 'Out of Stock',
-        message: 'Sorry, this product is currently unavailable.',
-        primaryActionText: 'Got it',
-      });
-      return;
-    }
-
-    const itemToAdd = {
-      id: `${productData.slug}-${selectedColor || "default"}-${
-        selectedSize || "default"
-      }`,
-      slug: productData.slug,
-      name: productData.name,
-      price: price,
-      imageUrl: productData.thumbnail_url,
-      quantity: 1,
-      selectedColor: selectedColor,
-      selectedSize: selectedSize,
-    };
-
-    const existingCartItems = JSON.parse(
-      localStorage.getItem("cartItems") || "[]"
-    );
-    const existingItemIndex = existingCartItems.findIndex(
-      (item) => item.id === itemToAdd.id
-    );
-
-    if (existingItemIndex > -1) {
-      existingCartItems[existingItemIndex].quantity += 1;
-    } else {
-      existingCartItems.push(itemToAdd);
-    }
-    localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
-
+    if (!inStock) return;
+    
     showModal({
         status: 'success',
-        title: 'Success!',
-        message: 'Your item has been successfully added to the cart.',
-        primaryActionText: 'Go to Cart',
-        onPrimaryAction: () => {
-            window.location.href = '/cart';
-        },
+        title: 'Added to Cart!',
+        message: `${productData.name} has been successfully added to your cart.`,
+        primaryActionText: 'View Cart',
+        onPrimaryAction: () => { window.location.href = '/cart'; },
         secondaryActionText: 'Continue Shopping'
     });
+    closeQuickView();
   };
 
   const handleAddToWishlist = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsWishlisted(!isWishlisted);
-    toast.info(
-      !isWishlisted
-        ? `${productData?.name} added to wishlist!`
-        : `${productData?.name} removed from wishlist!`,
-      { position: "bottom-right", autoClose: 2000 }
-    );
+    toast.info(!isWishlisted ? `${productData?.name} added to wishlist!` : `${productData?.name} removed from wishlist!`);
   };
 
   const handleQuickView = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setQuickViewOpen(true);
-    document.body.style.overflow = "hidden";
   };
 
-  const closeQuickView = () => {
-    setQuickViewOpen(false);
-    document.body.style.overflow = "auto";
-  };
-  
-  const handleMouseMove = (e) => {
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const mouseX = e.clientX - centerX;
-      const mouseY = e.clientY - centerY;
-      const rotateX = mouseY / 20;
-      const rotateY = -mouseX / 20;
-      setRotation({ x: rotateX, y: rotateY });
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setRotation({ x: 0, y: 0 });
-  };
-
-  const cardVariants = {
-    initial: { opacity: 0, scale: 0.95 },
-    animate: {
-      opacity: 1,
-      scale: 1,
-      transition: { type: "spring", damping: 20, stiffness: 100 },
-    },
-    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } },
-    hover: {},
-  };
-
-  const backdropVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  };
-
-  const modalVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.98 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: { type: "spring", damping: 25, stiffness: 200 },
-    },
-    exit: { opacity: 0, y: 30, scale: 0.98 },
-  };
+  const closeQuickView = () => setQuickViewOpen(false);
 
   return (
     <>
-      <Link href={productUrl} passHref>
+      <Link href={productUrl} passHref className="h-full">
         <motion.div
-          ref={cardRef}
-          className="group relative bg-white dark:bg-gray-800 p-3 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700 cursor-pointer h-full flex flex-col justify-between"
-          variants={cardVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          whileHover={{
-            scale: 1.03,
-            transition: { type: "spring", stiffness: 300 },
-          }}
-          // style={{
-          //   rotateX: `${rotation.x}deg`,
-          //   rotateY: `${rotation.y}deg`,
-          //   perspective: "600px",
-          // }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
+          className="group relative bg-[var(--color-surface)] p-3 rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-border h-full flex flex-col"
+          whileHover={{ scale: 1.02 }}
         >
-          {discount > 0 && (
-            <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10 shadow-md">
-              -{discount}%
-            </span>
-          )}
-
-          {!inStock && (
-            <span className="absolute top-3 right-3 bg-gray-600 text-white text-xs font-bold px-2 py-1 rounded-full z-10 shadow-md">
-              Out of Stock
-            </span>
-          )}
-
           <div className="relative aspect-square overflow-hidden rounded-lg mb-3">
+            {discount > 0 && <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full z-10">-{discount}%</div>}
             <Image
-              src={productData?.thumbnail_url || '/img/default-product.jpg'}
+              src={productData?.thumbnail_url || 'https://placehold.co/300x300/eee/ccc.png?text=No+Image'}
               alt={productData?.name || 'Product Image'}
               fill
               className="object-cover rounded-lg transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              priority={false}
-              onError={(e) => { e.target.onerror = null; e.target.src='/img/default-product.jpg'; }}
             />
-
-            <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-xs">
-              <motion.button
-                onClick={handleQuickView}
-                className="bg-white/90 p-2.5 rounded-full shadow-lg hover:bg-white transition-all duration-200"
-                aria-label="Quick view"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <HiOutlineEye className="text-gray-800 text-lg" />
-              </motion.button>
-              <motion.button
-                onClick={handleAddToWishlist}
-                className={`p-2.5 rounded-full shadow-lg transition-all duration-200 ${
-                  isWishlisted
-                    ? "bg-red-500/90 text-white"
-                    : "bg-white/90 hover:bg-white"
-                }`}
-                aria-label="Add to wishlist"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <motion.div
-                  key={isWishlisted ? "filled" : "empty"}
-                  initial={{ scale: 0.8 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
+            <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 backdrop-blur-sm">
+              {[
+                { icon: LuEye, action: handleQuickView, label: "Quick View" },
+                { icon: LuHeart, action: handleAddToWishlist, label: "Wishlist", active: isWishlisted },
+                { icon: LuShoppingCart, action: handleAddToCart, label: "Add to Cart", disabled: !inStock },
+              ].map((item, index) => (
+                <motion.button
+                  key={index}
+                  onClick={item.action}
+                  disabled={item.disabled}
+                  className={`p-3 rounded-full shadow-lg transition-all duration-200 ${item.active ? "bg-red-500 text-white" : "bg-white/90 text-gray-800 hover:bg-white"} disabled:bg-gray-300 disabled:cursor-not-allowed`}
+                  aria-label={item.label}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <LuHeart className={`text-lg ${isWishlisted ? 'text-white fill-current' : 'text-gray-800'}`} />
-                </motion.div>
-              </motion.button>
-              <motion.button
-                onClick={handleAddToCart}
-                disabled={!inStock}
-                className={`p-2.5 rounded-full shadow-lg transition-all duration-200 ${
-                  inStock
-                    ? "bg-white/90 hover:bg-white"
-                    : "bg-gray-300 cursor-not-allowed"
-                }`}
-                aria-label="Add to cart"
-                whileHover={inStock ? { scale: 1.1 } : {}}
-                whileTap={inStock ? { scale: 0.9 } : {}}
-              >
-                <LuShoppingCart className="text-lg text-gray-800" />
-              </motion.button>
+                  <item.icon className={`text-lg ${item.active ? 'fill-current' : ''}`} />
+                </motion.button>
+              ))}
             </div>
           </div>
-
-          <div className="flex-grow">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              {productData?.sub_category?.name}
-            </span>
-            <h3 className="font-medium text-gray-900 dark:text-white mt-1 mb-2 line-clamp-2 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-              {productData?.name}
-            </h3>
-
-            <div className="flex items-center gap-2 mt-auto">
-              <span className="text-lg font-bold text-gray-900 dark:text-white">
-                ${price?.toFixed(2)}
-              </span>
-              {originalPrice > price && (
-                <span className="text-sm text-gray-500 dark:text-gray-400 line-through">
-                  ${originalPrice?.toFixed(2)}
-                </span>
-              )}
+          <div className="flex-grow flex flex-col">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{productData?.sub_category?.name || 'Category'}</span>
+            <h3 className="font-semibold text-foreground mt-1 mb-2 line-clamp-2 group-hover:text-primary transition-colors">{productData?.name}</h3>
+            <div className="flex items-baseline gap-2 mt-auto">
+              <span className="text-xl font-bold text-foreground">${price?.toFixed(2)}</span>
+              {originalPrice > price && <span className="text-sm text-muted-foreground line-through">${originalPrice?.toFixed(2)}</span>}
             </div>
           </div>
         </motion.div>
@@ -278,187 +113,52 @@ const ProductCard = ({ productData }) => {
       <AnimatePresence>
         {quickViewOpen && (
           <motion.div
-            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
-            variants={backdropVariants}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={closeQuickView}
           >
             <motion.div
-              className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
-              variants={modalVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              className="bg-[var(--color-surface)] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl relative flex flex-col md:flex-row"
+              initial={{ y: 30, scale: 0.95 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={{ y: 30, scale: 0.95 }}
+              transition={{ type: "spring", damping: 20, stiffness: 200 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <button
-                onClick={closeQuickView}
-                className="absolute top-4 right-4 bg-white dark:bg-gray-700 p-2 rounded-full shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                aria-label="Close quick view"
-              >
-                <FiX className="text-lg" />
-              </button>
-
-              <div className="grid md:grid-cols-2 gap-6 p-6">
-                <div>
-                  <div className="relative aspect-square mb-4 rounded-xl overflow-hidden">
-                    <Image
-                      src={selectedImage || '/img/default-product.jpg'}
-                      alt={productData?.name || 'Product Image'}
-                      fill
-                      className="object-cover rounded-xl"
-                      priority
-                       onError={(e) => { e.target.onerror = null; e.target.src='/img/default-product.jpg'; }}
-                    />
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                    {[
-                      productData?.thumbnail_url,
-                      ...(productData?.additional_images?.map(img => img.image) || []),
-                    ].map((img, idx) => (
-                      <motion.button
-                        key={idx}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setSelectedImage(img);
-                        }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`relative h-16 w-16 min-w-[4rem] rounded-md overflow-hidden border-2 transition-all ${
-                          selectedImage === img
-                            ? "border-sky-500"
-                            : "border-transparent hover:border-gray-300"
-                        }`}
-                      >
-                        <Image
-                          src={img || '/img/default-product.jpg'}
-                          alt={`Thumbnail ${idx + 1}`}
-                          fill
-                          className="object-cover"
-                           onError={(e) => { e.target.onerror = null; e.target.src='/img/default-product.jpg'; }}
-                        />
-                      </motion.button>
-                    ))}
-                  </div>
+              <button onClick={closeQuickView} className="absolute top-4 right-4 bg-background/50 backdrop-blur-sm p-2 rounded-full z-20 hover:bg-background/80 transition-colors" aria-label="Close quick view"><FiX /></button>
+              
+              <div className="w-full md:w-1/2 p-4">
+                <div className="relative aspect-square mb-3 rounded-xl overflow-hidden">
+                  <Image src={selectedImage || 'https://placehold.co/500x500/eee/ccc.png?text=No+Image'} alt={productData?.name || 'Product Image'} fill className="object-cover" />
                 </div>
+                <div className="flex gap-2 justify-center">
+                  {allImages.map((img, idx) => (
+                    <button key={idx} onClick={() => setSelectedImage(img)} className={`relative h-14 w-14 rounded-md overflow-hidden border-2 transition-all ${selectedImage === img ? "border-primary" : "border-transparent hover:border-border"}`}>
+                      <Image src={img || 'https://placehold.co/100x100/eee/ccc.png?text=...'} alt={`Thumb ${idx + 1}`} fill className="object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                    {productData?.name}
-                  </h2>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 uppercase">
-                    {productData?.sub_category?.name}
-                  </span>
+              <div className="w-full md:w-1/2 p-6 flex flex-col overflow-y-auto">
+                <h2 className="text-2xl font-bold text-foreground mb-2">{productData?.name}</h2>
+                <div className="flex items-baseline gap-3 mb-4"><span className="text-2xl font-bold text-primary">${price?.toFixed(2)}</span>{originalPrice > price && <span className="text-base text-muted-foreground line-through">${originalPrice?.toFixed(2)}</span>}</div>
+                <p className="text-muted-foreground mb-6 text-sm line-clamp-3">{productData?.description.replace(/<[^>]*>?/gm, '')}</p>
+                
+                {colors?.length > 0 && (
+                  <div className="mb-4"><h4 className="font-medium mb-2 text-foreground">Color:</h4><div className="flex gap-2">{colors.map((color) => (<button key={color.hex} onClick={() => setSelectedColor(color)} className={`w-8 h-8 rounded-full border-2 transition-all ${selectedColor?.hex === color.hex ? "ring-2 ring-offset-1 ring-primary" : "border-border"}`} style={{ backgroundColor: color.hex }} />))}</div></div>
+                )}
+                {sizes?.length > 0 && (
+                  <div className="mb-6"><h4 className="font-medium mb-2 text-foreground">Size:</h4><div className="flex gap-2 flex-wrap">{sizes.map((size) => (<button key={size} onClick={() => setSelectedSize(size)} className={`px-3 py-1.5 text-sm rounded-md border ${selectedSize === size ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}>{size}</button>))}</div></div>
+                )}
 
-                  <div className="mb-4 mt-4">
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                      ${price?.toFixed(2)}
-                    </span>
-                    {originalPrice > price && (
-                      <span className="text-base text-gray-500 dark:text-gray-400 line-through ml-2">
-                        ${originalPrice?.toFixed(2)}
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-gray-600 dark:text-gray-300 mb-6">
-                    {productData?.description}
-                  </p>
-
-                  {colors?.length > 0 && (
-                    <div className="mb-4">
-                      <h4 className="font-medium mb-2 text-gray-900 dark:text-white">
-                        Color:
-                      </h4>
-                      <div className="flex gap-2">
-                        {colors.map((color) => (
-                          <motion.button
-                            key={color?.value}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setSelectedColor(color.value);
-                            }}
-                            whileTap={{ scale: 0.9 }}
-                            className={`w-8 h-8 rounded-full border-2 transition-all ${
-                              selectedColor === color.value
-                                ? "ring-2 ring-offset-1 ring-gray-400"
-                                : "border-gray-200 dark:border-gray-600"
-                            }`}
-                            style={{
-                              backgroundColor: color.value.toLowerCase(),
-                            }}
-                            aria-label={color?.value}
-                            title={color?.value}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {sizes?.length > 0 && (
-                    <div className="mb-6">
-                      <h4 className="font-medium mb-2 text-gray-900 dark:text-white">
-                        Size:
-                      </h4>
-                      <div className="flex gap-2 flex-wrap">
-                        {sizes.map((size) => (
-                          <motion.button
-                            key={size}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setSelectedSize(size);
-                            }}
-                            whileTap={{ scale: 0.95 }}
-                            className={`px-3 py-1.5 text-sm rounded-md border ${
-                              selectedSize === size
-                                ? "bg-sky-600 text-white border-sky-600"
-                                : "border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            }`}
-                          >
-                            {size}
-                          </motion.button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex gap-3">
-                    <motion.button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAddToCart(e);
-                        closeQuickView();
-                      }}
-                      disabled={!inStock}
-                      whileTap={inStock ? { scale: 0.98 } : {}}
-                      className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
-                        inStock
-                          ? "bg-sky-600 hover:bg-sky-700 text-white"
-                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      }`}
-                    >
-                      {inStock ? "Add to Cart" : "Out of Stock"}
-                    </motion.button>
-                    <motion.button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAddToWishlist(e);
-                      }}
-                      whileTap={{ scale: 0.9 }}
-                      className={`p-3 rounded-lg border flex items-center justify-center ${
-                        isWishlisted
-                          ? "border-red-500 text-red-500"
-                          : "border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      }`}
-                    >
-                      <LuHeart
-                        className={`text-lg ${
-                          isWishlisted ? "fill-current" : ""
-                        }`}
-                      />
-                    </motion.button>
-                  </div>
+                <div className="mt-auto pt-6 border-t border-border">
+                  <button onClick={handleAddToCart} disabled={!inStock} className="w-full py-3 px-4 rounded-lg font-semibold transition-colors bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <LuShoppingCart /> {inStock ? "Add to Cart" : "Out of Stock"}
+                  </button>
+                  <Link href={productUrl} className="block text-center mt-3 text-sm text-primary hover:underline">View Full Details</Link>
                 </div>
               </div>
             </motion.div>
@@ -468,6 +168,5 @@ const ProductCard = ({ productData }) => {
     </>
   );
 };
-
 export default ProductCard;
 

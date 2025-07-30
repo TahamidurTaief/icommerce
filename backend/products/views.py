@@ -1,31 +1,40 @@
-# backend/products/views.py
-
+# products/views.py
 from rest_framework import viewsets, permissions
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
 from .models import Product, Category, SubCategory, ProductSpecification
 from .serializers import ProductSerializer, CategorySerializer, SubCategorySerializer
 from .permissions import IsShopOwnerOrReadOnly
 from .filters import ProductFilter
 
-# --- This custom pagination class remains unchanged ---
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.filter(is_active=True)
+    queryset = Product.objects.filter(is_active=True).select_related('shop', 'sub_category__category').prefetch_related('specifications', 'additional_images', 'additional_descriptions', 'reviews')
     serializer_class = ProductSerializer
     permission_classes = [IsShopOwnerOrReadOnly]
     filterset_class = ProductFilter
     lookup_field = 'slug'
     pagination_class = StandardResultsSetPagination
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
     def perform_create(self, serializer):
-        serializer.save(shop=self.request.user.shop)
+        # This assumes a user can only own one shop. Adjust if a user can have multiple.
+        shop = self.request.user.shops.first()
+        if shop:
+            serializer.save(shop=shop)
+        else:
+            # Handle case where user does not own a shop
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError("You do not have a shop to add products to.")
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -37,19 +46,11 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
     serializer_class = SubCategorySerializer
     lookup_field = 'slug'
 
-# --- NEW: View to get unique color specifications ---
 class ColorListView(APIView):
-    """
-    A view to list all unique color values from product specifications.
-    This provides the data needed for the color filter in the sidebar.
-    """
-    permission_classes = [permissions.AllowAny] # Anyone can view colors
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, format=None):
-        # Fetch distinct color values where the specification name is 'Color'
         colors = ProductSpecification.objects.filter(name__iexact='Color').values_list('value', flat=True).distinct()
-        
-        # A helper to map color names to hex codes for the UI, as this is not stored in the DB.
         def name_to_hex(color_name):
             mapping = {
                 'black': '#000000', 'white': '#ffffff', 'red': '#ff0000',
@@ -58,15 +59,6 @@ class ColorListView(APIView):
                 'gray': '#808080', 'maroon': '#800000', 'olive': '#808000',
                 'purple': '#800080', 'teal': '#008080', 'navy': '#000080'
             }
-            return mapping.get(color_name.lower(), '#cccccc') # Default to gray
-
-        # Structure the response to match the frontend's original data structure
-        color_data = [
-            {
-                'id': color.lower().replace(" ", "-"),
-                'name': color.capitalize(),
-                'hex': name_to_hex(color)
-            }
-            for color in colors
-        ]
+            return mapping.get(color_name.lower(), '#cccccc')
+        color_data = [{'id': color.lower().replace(" ", "-"), 'name': color.capitalize(), 'hex': name_to_hex(color)} for color in colors]
         return Response(color_data)
