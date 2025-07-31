@@ -8,7 +8,7 @@ class CharInFilter(filters.BaseInFilter, filters.CharFilter):
 class ProductFilter(filters.FilterSet):
     category = filters.CharFilter(field_name='sub_category__category__slug')
     brands = CharInFilter(field_name='shop__slug', lookup_expr='in')
-    colors = CharInFilter(field_name='specifications__value', lookup_expr='in')
+    colors = CharInFilter(field_name='colors__name', lookup_expr='in') # Filter by color name
     min_price = filters.NumberFilter(field_name='price', lookup_expr='gte')
     max_price = filters.NumberFilter(field_name='price', lookup_expr='lte')
     ordering = filters.OrderingFilter(
@@ -24,7 +24,5 @@ class ProductFilter(filters.FilterSet):
         fields = ['category', 'brands', 'colors', 'min_price', 'max_price', 'ordering']
 
     def filter_queryset(self, queryset):
-        queryset = super().filter_queryset(queryset)
-        if 'colors' in self.request.query_params:
-            queryset = queryset.filter(specifications__name__iexact='Color').distinct()
-        return queryset
+        # Use distinct() to avoid duplicate results when filtering on ManyToMany fields
+        return super().filter_queryset(queryset).distinct()

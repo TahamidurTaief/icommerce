@@ -3,75 +3,77 @@ import { cache } from 'react';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
-export async function fetchAPI(endpoint, options = {}, retries = 3) {
+async function fetchAPI(endpoint, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  
   try {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const response = await fetch(url, {
-      cache: 'no-store',
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
-
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers, cache: 'no-store' });
     if (!response.ok) {
-      if (retries > 0 && response.status >= 500) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return fetchAPI(endpoint, options, retries - 1);
-      }
-      const errorText = await response.text();
-      console.error(`API Error: ${response.status} - ${errorText}`);
-      throw new Error(`API error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+        // Log the detailed error from the backend if available
+        console.error("Backend Error:", errorData);
+        throw new Error(`API Error: ${response.status} - ${errorData.detail}`);
     }
-    
-    if (response.status === 204) return null;
-    return await response.json();
+    return response.status === 204 ? null : await response.json();
   } catch (error) {
-    console.error("Fetch API failed:", error);
-    return { error: error.message, results: [], count: 0 };
+    console.error("Fetch API failed:", endpoint, error);
+    return { error: error.message };
   }
 }
 
-export const getCategories = cache(async () => {
-  return fetchAPI('/api/categories/', { next: { revalidate: 3600 } });
-});
-
-export const getShops = cache(async () => {
-  return fetchAPI('/api/shops/', { next: { revalidate: 3600 } });
-});
-
-export const getColors = cache(async () => {
-  return fetchAPI('/api/colors/', { next: { revalidate: 3600 } });
-});
-
+// Product and related fetches
 export const getProducts = async (filters = {}, page = 1) => {
-  const params = new URLSearchParams({ page });
+    const params = new URLSearchParams({ page });
 
-  if (filters.category) params.append('category', filters.category);
-  if (filters.brands?.length) params.append('brands', filters.brands.join(','));
-  if (filters.colors?.length) params.append('colors', filters.colors.join(','));
-  if (filters.priceRange) {
-    params.append('min_price', filters.priceRange[0]);
-    params.append('max_price', filters.priceRange[1]);
-  }
-  if (filters.sort) {
+    if (filters.category) {
+        params.append('category', filters.category);
+    }
+    if (filters.brands?.length) {
+        params.append('brands', filters.brands.join(','));
+    }
+    if (filters.colors?.length) {
+        params.append('colors', filters.colors.join(','));
+    }
+
+    // FIX: Correctly access priceRange by index and ensure values are numbers
+    if (filters.priceRange && Array.isArray(filters.priceRange)) {
+        const minPrice = filters.priceRange[0];
+        const maxPrice = filters.priceRange[1];
+        
+        if (typeof minPrice === 'number') {
+            params.append('min_price', minPrice);
+        }
+        if (typeof maxPrice === 'number') {
+            params.append('max_price', maxPrice);
+        }
+    }
+
+    // FIX: Translate frontend sort values to backend ordering parameters
     const sortMapping = {
-      'price-asc': 'price', 'price-desc': '-price',
-      'name-asc': 'name', 'name-desc': '-name',
-      'featured': '-created_at',
+        'price-asc': 'price',
+        'price-desc': '-price',
+        'name-asc': 'name',
+        'name-desc': '-name',
     };
-    if (sortMapping[filters.sort]) params.append('ordering', sortMapping[filters.sort]);
-  }
 
-  return fetchAPI(`/api/products/?${params.toString()}`);
+    if (filters.sort && sortMapping[filters.sort]) {
+        params.append('ordering', sortMapping[filters.sort]);
+    }
+    
+    return fetchAPI(`/api/products/?${params.toString()}`);
 };
 
-export const getProductBySlug = cache(async (slug) => {
-  if (!slug) return null;
-  return fetchAPI(`/api/products/${slug}/`);
-});
 
-  export const getInitialHomeProducts = cache(async () => {
-      return fetchAPI('/api/products/?limit=12');
-  });
+export const getProductBySlug = cache(async (slug) => fetchAPI(`/api/products/${slug}/`));
+export const getCategories = cache(async () => fetchAPI('/api/categories/'));
+export const getShops = cache(async () => fetchAPI('/api/shops/'));
+export const getColors = cache(async () => fetchAPI('/api/colors/'));
+export const getSizes = cache(async () => fetchAPI('/api/sizes/'));
+export const getInitialHomeProducts = cache(async () => fetchAPI('/api/products/?page_size=12'));
+
+// Shipping fetches
+export const getShippingMethods = cache(async () => fetchAPI('/api/shipping-methods/'));
+
+// Order fetches (requires authentication)
+export const getUserOrders = async () => fetchAPI('/api/orders/');
+export const getOrderDetails = async (orderNumber) => fetchAPI(`/api/orders/${orderNumber}/`);

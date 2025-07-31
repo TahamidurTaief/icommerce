@@ -8,7 +8,7 @@ export default async function Home() {
 
   // Extract the 'results' array or default to an empty array
   const initialProducts = initialProductsData?.results || [];
-  const categories = categoriesData || [];
+  const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
   return (
     <div>

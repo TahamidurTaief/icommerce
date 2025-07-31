@@ -5,7 +5,18 @@ from django.conf import settings
 from shops.models import Shop
 from ckeditor.fields import RichTextField
 
+class Color(models.Model):
+    name = models.CharField(max_length=50, unique=True, help_text="e.g., Red, Ocean Blue")
+    hex_code = models.CharField(max_length=7, unique=True, help_text="e.g., #FF0000")
 
+    def __str__(self):
+        return self.name
+
+class Size(models.Model):
+    name = models.CharField(max_length=50, unique=True, help_text="e.g., S, M, L, XL, 42")
+
+    def __str__(self):
+        return self.name
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -15,7 +26,6 @@ class Category(models.Model):
         verbose_name_plural = "Categories"
     def __str__(self):
         return self.name
-
 
 class SubCategory(models.Model):
     name = models.CharField(max_length=100)
@@ -32,20 +42,20 @@ class Product(models.Model):
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-    description = models.TextField(blank=True, help_text="Supports rich text/HTML from a frontend editor like React-Quill.")
+    description = RichTextField()
     sub_category = models.ForeignKey(SubCategory, on_delete=models.PROTECT, related_name='products')
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     thumbnail = models.ImageField(upload_to='products/thumbnails/', blank=True, null=True)
+    colors = models.ManyToManyField(Color, blank=True, related_name='products')
+    sizes = models.ManyToManyField(Size, blank=True, related_name='products')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
-
-
 
 class ProductAdditionalImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='additional_images')
@@ -55,35 +65,20 @@ class ProductAdditionalImage(models.Model):
     def __str__(self):
         return f"Image for {self.product.name}"
 
-
-
 class ProductAdditionalDescription(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='additional_descriptions')
-    # 2. Change TextField to RichTextField
     description = RichTextField()
-
-    class Meta:
-        verbose_name = 'ProductAdditionalDescription'
-        verbose_name_plural = 'ProductAdditionalDescriptions'
-
     def __str__(self):
-        # The stored value will have HTML tags, so we return a simple representation
         return f"Additional description for {self.product.name}"
-
-
 
 class ProductSpecification(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='specifications')
-    name = models.CharField(max_length=255, help_text="e.g., Color, Size, Material")
-    value = models.CharField(max_length=255, help_text="e.g., Red, XL, Cotton")
+    name = models.CharField(max_length=255, help_text="e.g., Material, Weight (Not for Color or Size)")
+    value = models.CharField(max_length=255, help_text="e.g., Cotton, 250g")
     class Meta:
         unique_together = ('product', 'name')
     def __str__(self):
         return f"{self.name}: {self.value}"
-    
-
-
-
 
 class Review(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')

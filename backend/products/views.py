@@ -1,10 +1,8 @@
 # products/views.py
 from rest_framework import viewsets, permissions
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .models import Product, Category, SubCategory, ProductSpecification
-from .serializers import ProductSerializer, CategorySerializer, SubCategorySerializer
+from .models import Product, Category, SubCategory, Color, Size
+from .serializers import ProductSerializer, CategorySerializer, SubCategorySerializer, ColorSerializer, SizeSerializer
 from .permissions import IsShopOwnerOrReadOnly
 from .filters import ProductFilter
 
@@ -14,7 +12,7 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 100
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.filter(is_active=True).select_related('shop', 'sub_category__category').prefetch_related('specifications', 'additional_images', 'additional_descriptions', 'reviews')
+    queryset = Product.objects.filter(is_active=True).select_related('shop', 'sub_category__category').prefetch_related('colors', 'sizes', 'reviews')
     serializer_class = ProductSerializer
     permission_classes = [IsShopOwnerOrReadOnly]
     filterset_class = ProductFilter
@@ -27,12 +25,10 @@ class ProductViewSet(viewsets.ModelViewSet):
         return context
 
     def perform_create(self, serializer):
-        # This assumes a user can only own one shop. Adjust if a user can have multiple.
-        shop = self.request.user.shops.first()
-        if shop:
-            serializer.save(shop=shop)
+        # Assumes a user has a one-to-one relationship with a shop
+        if hasattr(self.request.user, 'shop'):
+            serializer.save(shop=self.request.user.shop)
         else:
-            # Handle case where user does not own a shop
             from rest_framework.exceptions import ValidationError
             raise ValidationError("You do not have a shop to add products to.")
 
@@ -46,19 +42,12 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
     serializer_class = SubCategorySerializer
     lookup_field = 'slug'
 
-class ColorListView(APIView):
+class ColorViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Color.objects.all()
+    serializer_class = ColorSerializer
     permission_classes = [permissions.AllowAny]
 
-    def get(self, request, format=None):
-        colors = ProductSpecification.objects.filter(name__iexact='Color').values_list('value', flat=True).distinct()
-        def name_to_hex(color_name):
-            mapping = {
-                'black': '#000000', 'white': '#ffffff', 'red': '#ff0000',
-                'green': '#008000', 'blue': '#0000ff', 'yellow': '#ffff00',
-                'cyan': '#00ffff', 'magenta': '#ff00ff', 'silver': '#c0c0c0',
-                'gray': '#808080', 'maroon': '#800000', 'olive': '#808000',
-                'purple': '#800080', 'teal': '#008080', 'navy': '#000080'
-            }
-            return mapping.get(color_name.lower(), '#cccccc')
-        color_data = [{'id': color.lower().replace(" ", "-"), 'name': color.capitalize(), 'hex': name_to_hex(color)} for color in colors]
-        return Response(color_data)
+class SizeViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Size.objects.all()
+    serializer_class = SizeSerializer
+    permission_classes = [permissions.AllowAny]

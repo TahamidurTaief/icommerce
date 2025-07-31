@@ -84,7 +84,7 @@ const ProductPage = () => {
   const mobileBtnClass = useMemo(() => `md:hidden flex items-center gap-2 mb-4 px-4 py-2 rounded-lg ${resolvedTheme === "dark" ? "bg-gray-700 text-white" : "bg-primary text-white"}`, [resolvedTheme]);
 
   return (
-    <motion.div initial="hidden" animate="show" variants={staggerContainer()} className="w-[90%] mx-auto px-4 py-8">
+    <motion.div initial="hidden" animate="show" variants={staggerContainer()} className="w-[90%] pb-16 md:pb-0 mx-auto px-4 py-8">
       <motion.button variants={fadeIn("up", "tween", 0.2, 1)} onClick={() => setShowMobileFilters(true)} className={mobileBtnClass} aria-label="Open Filters">
         <FiFilter /> Filters
       </motion.button>
