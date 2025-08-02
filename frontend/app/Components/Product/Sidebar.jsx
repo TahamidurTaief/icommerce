@@ -16,14 +16,28 @@ const Sidebar = ({ filters, onFilterChange, onClearFilters, theme }) => {
   // Fetch all data for filters when the component mounts
   useEffect(() => {
     const fetchSidebarData = async () => {
-      const [categoriesData, shopsData, colorsData] = await Promise.all([
-        getCategories(),
-        getShops(), // "Brands" are fetched from the /api/shops/ endpoint
-        getColors(),
-      ]);
-      if (categoriesData && Array.isArray(categoriesData)) setCategories(categoriesData);
-      if (shopsData && Array.isArray(shopsData)) setBrands(shopsData);
-      if (colorsData && Array.isArray(colorsData)) setColors(colorsData);
+      try {
+        const [categoriesData, shopsData, colorsData] = await Promise.all([
+          getCategories(),
+          getShops(), // "Brands" are fetched from the /api/shops/ endpoint
+          getColors(),
+        ]);
+        
+        // The API functions now return arrays or empty arrays on error
+        if (Array.isArray(categoriesData)) {
+          setCategories(categoriesData);
+        }
+        
+        if (Array.isArray(shopsData)) {
+          setBrands(shopsData);
+        }
+        
+        if (Array.isArray(colorsData)) {
+          setColors(colorsData);
+        }
+      } catch (error) {
+        console.error("Error fetching sidebar data:", error);
+      }
     };
     fetchSidebarData();
   }, []);
@@ -110,6 +124,14 @@ const Sidebar = ({ filters, onFilterChange, onClearFilters, theme }) => {
                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${filters.category === cat.slug ? "bg-blue-500 border-blue-500" : (theme === "dark" ? "border-gray-600" : "border-gray-300")}`}>{filters.category === cat.slug && <Check size={12} className="text-white" />}</div>
               </div>
             ))}
+            {categories.length > 5 && (
+              <button 
+                onClick={() => setShowAllCategories(!showAllCategories)}
+                className={`w-full text-sm px-2 py-1 rounded ${theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"}`}
+              >
+                {showAllCategories ? "Show Less" : `Show All (${categories.length})`}
+              </button>
+            )}
           </div>
         </div>
 
@@ -123,6 +145,14 @@ const Sidebar = ({ filters, onFilterChange, onClearFilters, theme }) => {
                 <div className={`w-4 h-4 rounded-md border flex items-center justify-center ${filters.brands.includes(brand.slug) ? "bg-blue-500 border-blue-500" : (theme === "dark" ? "border-gray-600" : "border-gray-300")}`}>{filters.brands.includes(brand.slug) && <Check size={12} className="text-white" />}</div>
               </div>
             ))}
+            {brands.length > 5 && (
+              <button 
+                onClick={() => setShowAllBrands(!showAllBrands)}
+                className={`w-full text-sm px-2 py-1 rounded ${theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"}`}
+              >
+                {showAllBrands ? "Show Less" : `Show All (${brands.length})`}
+              </button>
+            )}
           </div>
         </div>
 
@@ -132,11 +162,19 @@ const Sidebar = ({ filters, onFilterChange, onClearFilters, theme }) => {
           <div className="pl-2">
             <div className="flex flex-wrap gap-2">
               {displayedColors.map((color) => (
-                <button key={color.id} onClick={() => handleColorChange(color.name)} className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 border ${filters.colors.includes(color.name) ? "ring-2 ring-offset-2 ring-blue-500" : (theme === "dark" ? "border-gray-600 hover:border-gray-500" : "border-gray-300 hover:border-gray-400")}`} style={{ backgroundColor: color.hex }} title={color.name}>
+                <button key={color.id} onClick={() => handleColorChange(color.name)} className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 border ${filters.colors.includes(color.name) ? "ring-2 ring-offset-2 ring-blue-500" : (theme === "dark" ? "border-gray-600 hover:border-gray-500" : "border-gray-300 hover:border-gray-400")}`} style={{ backgroundColor: color.hex_code }} title={color.name}>
                   {filters.colors.includes(color.name) && <Check size={14} className="text-white" />}
                 </button>
               ))}
             </div>
+            {colors.length > 6 && (
+              <button 
+                onClick={() => setShowAllColors(!showAllColors)}
+                className={`w-full text-sm px-2 py-1 rounded mt-2 ${theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"}`}
+              >
+                {showAllColors ? "Show Less" : `Show All (${colors.length})`}
+              </button>
+            )}
           </div>
         </div>
       </div>

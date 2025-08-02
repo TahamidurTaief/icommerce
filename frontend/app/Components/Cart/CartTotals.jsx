@@ -1,49 +1,130 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { FiTruck, FiTag, FiDollarSign } from "react-icons/fi";
+
 const CartTotals = ({
   subtotal,
   shipping,
   discount,
   total,
   shippingMethodName,
-  showShipping = true, // New prop to control visibility
+  showShipping = true,
+  selectedShippingMethod = null, // Add shipping method object for better display
 }) => {
+  const isShippingFree = shipping === 0;
+  const hasShippingSelected = selectedShippingMethod !== null;
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Subtotal */}
       <div className="flex justify-between items-center text-lg">
-        <span className="text-[var(--color-text-secondary)]">Subtotal</span>
+        <div className="flex items-center gap-2">
+          <FiDollarSign className="text-[var(--color-text-secondary)] w-4 h-4" />
+          <span className="text-[var(--color-text-secondary)]">Cart Subtotal</span>
+        </div>
         <span className="font-semibold text-[var(--color-text-primary)]">
           ${subtotal.toFixed(2)}
         </span>
       </div>
 
-      {/* UPDATED: Conditionally render the shipping cost row */}
+      {/* Shipping Cost */}
       {showShipping && (
-        <div className="flex justify-between items-center text-lg">
-          <span className="text-[var(--color-text-secondary)]">
-            {shippingMethodName || "Shipping"}
-          </span>
-          <span className="font-semibold text-[var(--color-text-primary)]">
-            ${shipping > 0 ? shipping.toFixed(2) : "Free"}
-          </span>
-        </div>
+        <motion.div 
+          className="flex justify-between items-center text-lg"
+          initial={{ opacity: 0.6 }}
+          animate={{ 
+            opacity: hasShippingSelected ? 1 : 0.6,
+            scale: hasShippingSelected ? 1 : 0.98 
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="flex items-center gap-2">
+            <FiTruck className={`w-4 h-4 ${hasShippingSelected ? 'text-blue-600' : 'text-[var(--color-text-secondary)]'}`} />
+            <span className="text-[var(--color-text-secondary)]">
+              {shippingMethodName || "Shipping"}
+            </span>
+          </div>
+          <div className="text-right">
+            {hasShippingSelected ? (
+              <motion.span 
+                className={`font-semibold ${isShippingFree ? 'text-green-600' : 'text-[var(--color-text-primary)]'}`}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                {isShippingFree ? "Free" : `$${shipping.toFixed(2)}`}
+              </motion.span>
+            ) : (
+              <span className="text-[var(--color-text-secondary)] text-sm italic">
+                Select method
+              </span>
+            )}
+          </div>
+        </motion.div>
       )}
 
+      {/* Discount */}
       {discount > 0 && (
-        <div className="flex justify-between items-center text-lg">
-          <span className="text-[var(--color-text-secondary)]">Discount</span>
-          <span className="font-semibold text-[var(--color-accent-green)]">
+        <motion.div 
+          className="flex justify-between items-center text-lg"
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="flex items-center gap-2">
+            <FiTag className="text-green-600 w-4 h-4" />
+            <span className="text-[var(--color-text-secondary)]">Discount</span>
+          </div>
+          <span className="font-semibold text-green-600">
             -${discount.toFixed(2)}
           </span>
-        </div>
+        </motion.div>
       )}
-      <div className="border-t border-[var(--color-border)] my-3"></div>
-      <div className="flex justify-between items-center text-2xl font-bold">
-        <span className="text-[var(--color-text-primary)]">Total</span>
-        <span className="text-[var(--color-button-primary)]">
+
+      {/* Divider */}
+      <div className="border-t border-[var(--color-border)] my-4"></div>
+
+      {/* Grand Total */}
+      <motion.div 
+        className="flex justify-between items-center text-2xl font-bold bg-[var(--color-second-bg)] p-4 rounded-lg border border-[var(--color-border)]"
+        key={total} // Force re-render on total change
+        initial={{ scale: 0.98 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.2 }}
+      >
+        <span className="text-[var(--color-text-primary)]">Grand Total</span>
+        <motion.span 
+          className="text-[var(--color-button-primary)]"
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.3, type: "spring" }}
+        >
           ${total.toFixed(2)}
-        </span>
-      </div>
+        </motion.span>
+      </motion.div>
+
+      {/* Shipping Method Info */}
+      {hasShippingSelected && selectedShippingMethod?.description && (
+        <motion.div 
+          className="text-sm text-[var(--color-text-secondary)] bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="flex items-start gap-2">
+            <FiTruck className="text-blue-600 w-4 h-4 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-blue-800 dark:text-blue-200">
+                {selectedShippingMethod.name || selectedShippingMethod.title}
+              </p>
+              <p className="text-blue-700 dark:text-blue-300 text-xs">
+                {selectedShippingMethod.description}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

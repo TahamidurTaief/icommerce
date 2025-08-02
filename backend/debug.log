@@ -1,0 +1,106 @@
+INFO 2025-08-02 16:13:14,986 autoreload 10860 16908 Watching for file changes with StatReloader
+INFO 2025-08-02 16:23:56,474 autoreload 10860 16908 C:\Users\taham\OneDrive\Desktop\icommerce\backend\backend\settings.py changed, reloading.
+INFO 2025-08-02 16:23:59,584 autoreload 15896 12700 Watching for file changes with StatReloader
+INFO 2025-08-02 16:47:58,547 autoreload 15896 12700 C:\Users\taham\OneDrive\Desktop\icommerce\backend\products\models.py changed, reloading.
+INFO 2025-08-02 16:48:00,711 autoreload 17172 13308 Watching for file changes with StatReloader
+INFO 2025-08-02 16:48:08,672 autoreload 17172 13308 C:\Users\taham\OneDrive\Desktop\icommerce\backend\products\models.py changed, reloading.
+INFO 2025-08-02 16:48:10,988 autoreload 5932 3024 Watching for file changes with StatReloader
+INFO 2025-08-02 16:49:21,839 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12']}>
+INFO 2025-08-02 16:49:21,904 views 8776 956 Successfully paginated 12 products
+INFO 2025-08-02 16:49:22,084 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['1']}>
+INFO 2025-08-02 16:49:22,098 views 8776 956 Successfully paginated 1 products
+INFO 2025-08-02 16:49:22,121 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['5']}>
+INFO 2025-08-02 16:49:22,142 views 8776 956 Successfully paginated 5 products
+INFO 2025-08-02 16:49:22,223 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12']}>
+INFO 2025-08-02 16:49:22,254 views 8776 956 Successfully paginated 12 products
+INFO 2025-08-02 16:49:22,372 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['50']}>
+INFO 2025-08-02 16:49:22,413 views 8776 956 Successfully paginated 17 products
+INFO 2025-08-02 16:49:22,589 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['100']}>
+INFO 2025-08-02 16:49:22,626 views 8776 956 Successfully paginated 17 products
+INFO 2025-08-02 16:49:22,797 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['150']}>
+INFO 2025-08-02 16:49:22,829 views 8776 956 Successfully paginated 17 products
+INFO 2025-08-02 16:49:23,002 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12']}>
+INFO 2025-08-02 16:49:23,041 views 8776 956 Successfully paginated 12 products
+INFO 2025-08-02 16:49:23,173 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'min_price': ['10']}>
+INFO 2025-08-02 16:49:23,200 views 8776 956 Successfully paginated 12 products
+INFO 2025-08-02 16:49:23,323 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'max_price': ['100']}>
+INFO 2025-08-02 16:49:23,362 views 8776 956 Successfully paginated 9 products
+INFO 2025-08-02 16:49:23,470 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'min_price': ['10'], 'max_price': ['100']}>
+INFO 2025-08-02 16:49:23,493 views 8776 956 Successfully paginated 9 products
+INFO 2025-08-02 16:49:23,593 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'ordering': ['price']}>
+INFO 2025-08-02 16:49:23,642 views 8776 956 Successfully paginated 12 products
+INFO 2025-08-02 16:49:23,898 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'ordering': ['-price']}>
+INFO 2025-08-02 16:49:24,003 views 8776 956 Successfully paginated 12 products
+INFO 2025-08-02 16:49:24,149 views 8776 956 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'ordering': ['name']}>
+INFO 2025-08-02 16:49:24,189 views 8776 956 Successfully paginated 12 products
+INFO 2025-08-02 16:51:44,864 views 15532 5236 ProductViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-02 16:51:44,930 views 15532 5236 Successfully paginated 10 products
+INFO 2025-08-02 16:51:45,099 views 15532 5236 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12']}>
+INFO 2025-08-02 16:51:45,135 views 15532 5236 Successfully paginated 12 products
+INFO 2025-08-02 16:51:45,300 views 15532 5236 ProductViewSet.list called with params: <QueryDict: {'page_size': ['5']}>
+INFO 2025-08-02 16:51:45,333 views 15532 5236 Successfully paginated 5 products
+INFO 2025-08-02 16:51:45,438 views 15532 5236 ProductViewSet.list called with params: <QueryDict: {'page_size': ['1']}>
+INFO 2025-08-02 16:51:45,471 views 15532 5236 Successfully paginated 1 products
+INFO 2025-08-02 16:51:45,484 views 15532 5236 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'min_price': ['10']}>
+INFO 2025-08-02 16:51:45,543 views 15532 5236 Successfully paginated 12 products
+INFO 2025-08-02 16:51:45,665 views 15532 5236 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'ordering': ['price']}>
+INFO 2025-08-02 16:51:45,706 views 15532 5236 Successfully paginated 12 products
+INFO 2025-08-02 16:51:45,839 views 15532 5236 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'category': ['clothing']}>
+INFO 2025-08-02 16:51:45,855 views 15532 5236 Successfully paginated 0 products
+INFO 2025-08-02 16:59:45,434 views 5932 3632 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12']}>
+INFO 2025-08-02 16:59:45,501 views 5932 3632 Successfully paginated 12 products
+INFO 2025-08-02 16:59:45,648 basehttp 5932 3632 "GET /api/products/?page_size=12 HTTP/1.1" 200 13498
+INFO 2025-08-02 16:59:46,325 basehttp 5932 5376 "GET /api/categories/ HTTP/1.1" 200 2176
+INFO 2025-08-02 16:59:52,320 basehttp 5932 10864 "GET /media/products/thumbnails/men-fashion.jpeg HTTP/1.1" 200 35532
+INFO 2025-08-02 17:00:29,678 basehttp 5932 14616 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-02 17:00:29,694 basehttp 5932 15840 "OPTIONS /api/shops/ HTTP/1.1" 200 0
+INFO 2025-08-02 17:00:29,697 basehttp 5932 12168 "OPTIONS /api/colors/ HTTP/1.1" 200 0
+INFO 2025-08-02 17:00:29,944 basehttp 5932 14616 "OPTIONS /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 0
+INFO 2025-08-02 17:00:29,960 views 5932 14616 ProductViewSet.list called with params: <QueryDict: {'page': ['1'], 'min_price': ['0'], 'max_price': ['1000']}>
+INFO 2025-08-02 17:00:30,082 basehttp 5932 15840 "GET /api/shops/ HTTP/1.1" 200 1996
+INFO 2025-08-02 17:00:30,094 views 5932 14616 Successfully paginated 10 products
+INFO 2025-08-02 17:00:30,114 basehttp 5932 14564 "GET /api/colors/ HTTP/1.1" 200 501
+INFO 2025-08-02 17:00:30,204 basehttp 5932 12168 "GET /api/categories/ HTTP/1.1" 200 2176
+INFO 2025-08-02 17:00:30,430 basehttp 5932 14616 "GET /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 11330
+INFO 2025-08-02 17:01:51,303 views 15972 7308 ProductViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-02 17:01:51,362 views 15972 7308 Successfully paginated 10 products
+INFO 2025-08-02 17:01:51,474 views 15972 7308 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12']}>
+INFO 2025-08-02 17:01:51,527 views 15972 7308 Successfully paginated 12 products
+INFO 2025-08-02 17:01:51,664 views 15972 7308 ProductViewSet.list called with params: <QueryDict: {'page_size': ['5']}>
+INFO 2025-08-02 17:01:51,695 views 15972 7308 Successfully paginated 5 products
+INFO 2025-08-02 17:01:51,779 views 15972 7308 ProductViewSet.list called with params: <QueryDict: {'page_size': ['1']}>
+INFO 2025-08-02 17:01:51,816 views 15972 7308 Successfully paginated 1 products
+INFO 2025-08-02 17:01:51,859 views 15972 7308 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'min_price': ['10']}>
+INFO 2025-08-02 17:01:51,920 views 15972 7308 Successfully paginated 12 products
+INFO 2025-08-02 17:01:52,035 views 15972 7308 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'ordering': ['price']}>
+INFO 2025-08-02 17:01:52,090 views 15972 7308 Successfully paginated 12 products
+INFO 2025-08-02 17:01:52,216 views 15972 7308 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12'], 'category': ['clothing']}>
+INFO 2025-08-02 17:01:52,239 views 15972 7308 Successfully paginated 0 products
+INFO 2025-08-02 17:02:36,985 views 8576 780 ProductViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-02 17:02:37,027 views 8576 780 Successfully paginated 10 products
+INFO 2025-08-02 17:03:25,215 autoreload 5932 3024 C:\Users\taham\OneDrive\Desktop\icommerce\backend\shops\models.py changed, reloading.
+INFO 2025-08-02 17:03:27,475 autoreload 2828 5212 Watching for file changes with StatReloader
+INFO 2025-08-02 17:03:41,906 autoreload 2828 5212 C:\Users\taham\OneDrive\Desktop\icommerce\backend\products\views.py changed, reloading.
+INFO 2025-08-02 17:03:44,167 autoreload 12068 12768 Watching for file changes with StatReloader
+INFO 2025-08-02 17:03:57,284 autoreload 12068 12768 C:\Users\taham\OneDrive\Desktop\icommerce\backend\products\views.py changed, reloading.
+INFO 2025-08-02 17:03:59,528 autoreload 2516 2348 Watching for file changes with StatReloader
+INFO 2025-08-02 17:04:10,556 autoreload 2516 2348 C:\Users\taham\OneDrive\Desktop\icommerce\backend\products\views.py changed, reloading.
+INFO 2025-08-02 17:04:12,827 autoreload 16876 7692 Watching for file changes with StatReloader
+INFO 2025-08-02 17:04:24,027 autoreload 16876 7692 C:\Users\taham\OneDrive\Desktop\icommerce\backend\products\views.py changed, reloading.
+INFO 2025-08-02 17:04:26,445 autoreload 9596 14420 Watching for file changes with StatReloader
+INFO 2025-08-02 17:04:46,101 autoreload 9596 14420 C:\Users\taham\OneDrive\Desktop\icommerce\backend\shops\views.py changed, reloading.
+INFO 2025-08-02 17:04:48,248 autoreload 9380 14524 Watching for file changes with StatReloader
+INFO 2025-08-02 17:04:58,765 autoreload 9380 14524 C:\Users\taham\OneDrive\Desktop\icommerce\backend\shops\views.py changed, reloading.
+INFO 2025-08-02 17:05:01,459 autoreload 2836 14488 Watching for file changes with StatReloader
+INFO 2025-08-02 17:05:26,305 views 14296 12260 ProductViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-02 17:05:26,356 views 14296 12260 Successfully paginated 10 products
+INFO 2025-08-02 17:05:26,488 views 14296 12260 CategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-02 17:05:26,513 views 14296 12260 Successfully returned 4 categories
+INFO 2025-08-02 17:05:26,528 views 14296 12260 SubCategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-02 17:05:26,542 views 14296 12260 Successfully returned 4 subcategories
+INFO 2025-08-02 17:05:26,548 views 14296 12260 ColorViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-02 17:05:26,560 views 14296 12260 Successfully returned 4 colors
+INFO 2025-08-02 17:05:26,572 views 14296 12260 SizeViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-02 17:05:26,580 views 14296 12260 Successfully returned 4 sizes
+INFO 2025-08-02 17:05:26,592 views 14296 12260 ShopViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-02 17:05:26,598 views 14296 12260 Successfully paginated 10 shops

@@ -4,7 +4,7 @@
 
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
-from .models import Order, OrderItem, ShippingMethod, OrderUpdate
+from .models import Order, OrderItem, ShippingMethod, OrderUpdate, OrderPayment
 
 @admin.register(ShippingMethod)
 class ShippingMethodAdmin(ModelAdmin):
@@ -30,3 +30,23 @@ class OrderAdmin(ModelAdmin):
     search_fields = ('order_number', 'user__email', 'tracking_number')
     inlines = [OrderItemInline, OrderUpdateInline]
     readonly_fields = ('user', 'total_amount', 'shipping_address', 'shipping_method', 'ordered_at', 'order_number')
+
+@admin.register(OrderPayment)
+class OrderPaymentAdmin(ModelAdmin):
+    list_display = ('order', 'payment_method', 'sender_number', 'transaction_id', 'created_at')
+    list_filter = ('payment_method', 'created_at')
+    search_fields = ('order__order_number', 'sender_number', 'transaction_id', 'admin_account_number')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    fieldsets = (
+        ('Order Information', {
+            'fields': ('order',)
+        }),
+        ('Payment Details', {
+            'fields': ('payment_method', 'sender_number', 'transaction_id', 'admin_account_number')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )

@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion";
 import FormField from "../Common/FormField";
-import ShippingOptions from "./ShippingOptions";
-import { ShippingData } from "@/app/lib/Data/ShippingData";
+import { ShippingMethodSelector } from "../index";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -16,8 +15,8 @@ const containerVariants = {
 const CheckoutForm = ({
   formData,
   onFormChange,
-  selectedShippingId,
-  onShippingSelect,
+  selectedShippingMethod,
+  onShippingMethodChange,
 }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -93,10 +92,11 @@ const CheckoutForm = ({
       <div className="border-t border-[var(--color-border)]"></div>
 
       {/* Section for Delivery Method */}
-      <ShippingOptions
-        options={ShippingData}
-        selectedId={selectedShippingId}
-        onSelect={onShippingSelect}
+      <ShippingMethodSelector
+        onSelectionChange={onShippingMethodChange}
+        selectedMethodId={selectedShippingMethod?.id}
+        title="Delivery Method"
+        className="space-y-4"
       />
     </motion.div>
   );

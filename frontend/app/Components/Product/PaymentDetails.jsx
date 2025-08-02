@@ -1,48 +1,68 @@
-// ===================================================================
-// app/Components/Product/PaymentDetails.jsx
-
 "use client";
-export default function PaymentDetails({ product, quantity, setQuantity, calculations, shippingMethods, selectedShipping, setSelectedShipping, isInCart, handleAddToCart, handleRemoveFromCart }) {
-  const { subtotal, shippingCost, total } = calculations;
+import { Plus, Minus } from "lucide-react";
+
+// This component provides the order action panel. It now focuses on quantity
+// and the primary add-to-cart action, with shipping removed for a cleaner flow.
+export default function PaymentDetails({ 
+  product, 
+  quantity, 
+  setQuantity, 
+  isInCart, 
+  handleAddToCart, 
+  handleRemoveFromCart 
+}) {
   const inStock = product.stock > 0 && product.is_active;
+  const price = parseFloat(product.discount_price) || parseFloat(product.price) || 0;
+  const subtotal = price * quantity;
+
+  const handleQuantityChange = (amount) => {
+    const newQuantity = quantity + amount;
+    if (newQuantity >= 1 && newQuantity <= (product.stock || 99)) {
+      setQuantity(newQuantity);
+    }
+  };
 
   return (
-    <div className="bg-[var(--color-second-bg)] p-6 rounded-lg border shadow-md sticky top-28">
-      <h2 className="font-bold py-2 text-center text-primary-foreground bg-primary rounded-lg mb-6">Order Summary</h2>
-      
-      <div className="mb-4 flex justify-between items-center">
-        <h3 className="font-semibold text-lg">Quantity:</h3>
-        <input type="number" min="1" max={product.stock || 99} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="w-20 p-2 border rounded-lg text-center bg-[var(--color-background)]" />
-      </div>
-      
-      <div className="mb-4">
-        <h3 className="font-semibold text-lg mb-2">Shipping Method:</h3>
-        <div className="space-y-2">
-          {shippingMethods.map(method => (
-            <label key={method.id} className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-muted" onClick={() => setSelectedShipping(method)}>
-              <input type="radio" name="shipping" checked={selectedShipping?.id === method.id} readOnly className="w-4 h-4 text-primary focus:ring-primary"/>
-              <div className="ml-3 flex-grow">
-                <p className="font-medium">{method.name}</p>
-              </div>
-              <p className="font-semibold">${method.price}</p>
-            </label>
-          ))}
+    <div className="bg-[var(--color-second-bg)] p-6 rounded-xl border border-border shadow-lg sticky top-24">
+      <div className="space-y-4">
+        {/* Availability Status */}
+        <div className={`text-sm font-bold py-2 px-3 rounded-md text-center ${inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {inStock ? `In Stock (${product.stock} available)` : 'Out of Stock'}
+        </div>
+
+        {/* Quantity Selector */}
+        <div>
+          <h3 className="font-semibold text-md mb-2">Quantity:</h3>
+          <div className="flex items-center justify-between border border-border rounded-lg p-2">
+            <button onClick={() => handleQuantityChange(-1)} className="p-2 rounded-md hover:bg-muted transition-colors disabled:opacity-50" disabled={quantity <= 1}>
+              <Minus size={16} />
+            </button>
+            <span className="font-bold text-lg w-12 text-center">{quantity}</span>
+            <button onClick={() => handleQuantityChange(1)} className="p-2 rounded-md hover:bg-muted transition-colors disabled:opacity-50" disabled={quantity >= (product.stock || 99)}>
+              <Plus size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-2 text-sm border-t pt-4">
-        <div className="flex justify-between"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-        <div className="flex justify-between"><span>Shipping</span><span>${shippingCost.toFixed(2)}</span></div>
-        <div className="flex justify-between font-bold text-lg text-primary mt-2"><span>Total</span><span>${total.toFixed(2)}</span></div>
+      <div className="border-t border-border my-5"></div>
+
+      {/* Simplified Order Summary */}
+      <div className="space-y-2 text-md">
+        <div className="flex justify-between font-bold text-xl text-foreground">
+          <span>Subtotal</span>
+          <span className="text-primary">${subtotal.toFixed(2)}</span>
+        </div>
       </div>
       
+      {/* Action Button */}
       <button 
         onClick={isInCart ? handleRemoveFromCart : handleAddToCart} 
         disabled={!inStock} 
-        className={`mt-6 w-full font-bold py-3 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
+        className={`mt-6 w-full font-semibold py-2 text-lg rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
           ${isInCart 
-            ? 'bg-red-600 text-white hover:bg-red-700' 
-            : 'bg-primary text-primary-foreground hover:bg-primary/90'
+            ? 'bg-red-500 text-white hover:bg-red-500' 
+            : 'bg-[var(--color-background)] text-var(--text-primary) hover:bg-primary/90'
           }`}
       >
         {inStock ? (isInCart ? 'Remove from Cart' : 'Add to Cart') : 'Out of Stock'}

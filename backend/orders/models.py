@@ -62,3 +62,24 @@ class OrderUpdate(models.Model):
 
     def __str__(self):
         return f"Update for {self.order.order_number} at {self.timestamp}"
+
+class OrderPayment(models.Model):
+    class PaymentMethod(models.TextChoices):
+        BKASH = 'bkash', 'bKash'
+        NAGAD = 'nagad', 'Nagad'
+        CARD = 'card', 'Card'
+
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment')
+    admin_account_number = models.CharField(max_length=50, blank=True, null=True, help_text="Backend-set account number")
+    sender_number = models.CharField(max_length=50, help_text="Customer's payment number")
+    transaction_id = models.CharField(max_length=100, help_text="Transaction/Reference ID")
+    payment_method = models.CharField(max_length=10, choices=PaymentMethod.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Order Payment"
+        verbose_name_plural = "Order Payments"
+
+    def __str__(self):
+        return f"Payment for {self.order.order_number} - {self.get_payment_method_display()}"

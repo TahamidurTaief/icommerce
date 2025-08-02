@@ -34,7 +34,7 @@ export default function ImageGallery({ images, productName }) {
           <button
             key={index}
             onClick={() => setSelectedImage(img)}
-            className={`relative w-20 h-20 min-w-[5rem] rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+            className={`relative w-16 h-16 min-w-[2rem] rounded-lg overflow-hidden border-2 transition-all duration-200 ${
               selectedImage === img
                 ? "border-primary ring-2 ring-primary"
                 : "border-border hover:border-muted-foreground"
@@ -45,7 +45,7 @@ export default function ImageGallery({ images, productName }) {
               alt={`Thumbnail ${index + 1}`}
               fill
               className="object-cover"
-              sizes="80px"
+              sizes="50px"
             />
           </button>
         ))}

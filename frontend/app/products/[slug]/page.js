@@ -10,8 +10,9 @@ import Loading from "./loading";
  * @param {{ params: { slug: string } }} props
  */
 export async function generateMetadata({ params }) {
-  // ## FIX: Directly use params.slug to avoid the Next.js warning ##
-  const product = await getProductBySlug(params.slug);
+  // Await params before accessing its properties
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
 
   if (!product || product.error) {
     return { title: "Product Not Found" };
@@ -30,8 +31,9 @@ export async function generateMetadata({ params }) {
  * @param {{ params: { slug: string } }} props
  */
 export default async function ProductDetailPage({ params }) {
-  // ## FIX: Directly use params.slug to avoid the Next.js warning ##
-  const product = await getProductBySlug(params.slug);
+  // Await params before accessing its properties
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
 
   if (!product || product.error || !product.id) {
     notFound();
