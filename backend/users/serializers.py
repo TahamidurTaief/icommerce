@@ -53,14 +53,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         refresh = self.get_token(user)
 
         return {
-            'refresh': str(refresh),
             'access': str(refresh.access_token),
+            'refresh': str(refresh),
             'user': {
                 'id': user.id,
                 'email': user.email,
                 'name': user.name,
                 'user_type': user.user_type,
-            }
+                'is_active': user.is_active,
+                'date_joined': user.date_joined.isoformat()
+            },
+            'message': 'Login successful'
         }
 
 
@@ -147,6 +150,84 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         # Create user with the custom manager which handles password hashing
         user = User.objects.create_user(password=password, **validated_data)
         return user
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user registration with name, email, password, and confirm_password
+    """
+    password = serializers.CharField(
+        write_only=True, 
+        min_length=8,
+        style={'input_type': 'password'},
+        help_text="Password must be at least 8 characters long"
+    )
+    confirm_password = serializers.CharField(
+        write_only=True,
+        style={'input_type': 'password'},
+        help_text="Enter the same password as before, for verification"
+    )
+
+    class Meta:
+        model = User
+        fields = ('name', 'email', 'password', 'confirm_password')
+        extra_kwargs = {
+            'email': {
+                'help_text': 'Enter a valid email address',
+                'error_messages': {
+                    'unique': 'A user with this email already exists.',
+                }
+            },
+            'name': {
+                'help_text': 'Enter your full name',
+                'max_length': 255
+            }
+        }
+
+    def validate_email(self, value):
+        """
+        Check that the email is not already in use
+        """
+        if User.objects.filter(email=value.lower()).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value.lower()
+
+    def validate(self, attrs):
+        """
+        Check that the password and confirm_password match
+        """
+        password = attrs.get('password')
+        confirm_password = attrs.get('confirm_password')
+        
+        if password and confirm_password and password != confirm_password:
+            raise serializers.ValidationError({
+                'confirm_password': "The password fields didn't match."
+            })
+        
+        return attrs
+
+    def create(self, validated_data):
+        """
+        Create and return a new user instance with hashed password
+        Returns user's basic info (id, name, email)
+        """
+        # Remove confirm_password from validated_data as it's not needed for user creation
+        validated_data.pop('confirm_password')
+        password = validated_data.pop('password')
+        
+        # Create user with hashed password using the custom manager
+        user = User.objects.create_user(password=password, **validated_data)
+        return user
+
+    def to_representation(self, instance):
+        """
+        Return user's basic info (id, name, email) after successful registration
+        """
+        return {
+            'id': instance.id,
+            'name': instance.name,
+            'email': instance.email
+        }
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -5,14 +5,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
     TokenRefreshView,
 )
 
 from products.views import ProductViewSet, CategoryViewSet, SubCategoryViewSet, ColorViewSet, SizeViewSet
 from shops.views import ShopViewSet
 from orders.views import OrderViewSet, ShippingMethodViewSet, OrderPaymentViewSet, ShippingMethodListAPIView
-from users.views import UserRegistrationView, register_view
+from users.views import UserRegistrationView, register_view, RegisterAPIView, CustomTokenObtainPairView
 
 router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
@@ -31,11 +30,11 @@ urlpatterns = [
     path('api/shipping-methods-list/', ShippingMethodListAPIView.as_view(), name='shipping-methods-list'),
     
     # JWT Authentication endpoints
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # Direct registration endpoint
-    path('api/register/', UserRegistrationView.as_view(), name='api_register'),
+    path('api/register/', RegisterAPIView.as_view(), name='api_register'),
     path('api/signup/', register_view, name='api_signup'),
     
     # User authentication and profile endpoints

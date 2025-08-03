@@ -12,6 +12,32 @@ const getAuthHeaders = () => {
   return {};
 };
 
+// Helper function to handle 401 unauthorized responses
+const handle401Redirect = () => {
+  if (typeof window !== 'undefined') {
+    // Clear stored auth data
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    
+    // Redirect to login - check if we're not already on a public page
+    const currentPath = window.location.pathname;
+    const publicPaths = ['/', '/products', '/categories', '/auth'];
+    const isPublicPath = publicPaths.some(path => currentPath.startsWith(path));
+    
+    if (!isPublicPath) {
+      // Store the current path to redirect back after login
+      localStorage.setItem('redirectAfterLogin', currentPath);
+      
+      // Trigger auth modal or redirect
+      // We'll dispatch a custom event that the AuthContext can listen to
+      window.dispatchEvent(new CustomEvent('authRequired', { 
+        detail: { reason: 'Session expired. Please login again.' }
+      }));
+    }
+  }
+};
+
 async function fetchAPI(endpoint, options = {}) {
   const headers = { 
     'Content-Type': 'application/json', 
@@ -28,9 +54,25 @@ async function fetchAPI(endpoint, options = {}) {
     
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-        // Log the detailed error from the backend if available
         console.error("Backend Error:", errorData);
-        throw new Error(`API Error: ${response.status} - ${errorData.detail}`);
+        
+        // Handle 401 Unauthorized responses
+        if (response.status === 401) {
+          handle401Redirect();
+          return { error: 'Authentication required. Please login again.' };
+        }
+        
+        // Return the full error data for better error handling
+        if (response.status === 400 && errorData.errors) {
+          // Validation errors from our RegisterAPIView
+          return { error: errorData.message || 'Validation failed', errors: errorData.errors };
+        } else if (response.status === 403) {
+          // Forbidden - user doesn't have permission
+          return { error: errorData.detail || 'Access denied. You do not have permission to perform this action.' };
+        } else {
+          // Other errors
+          return { error: errorData.detail || errorData.message || response.statusText };
+        }
     }
     return response.status === 204 ? null : await response.json();
   } catch (error) {
@@ -123,49 +165,43 @@ export const createOrderWithPayment = async (orderData) => {
 
 // Authentication functions
 export const loginUser = async (email, password) => {
-  try {
-    const response = await fetchAPI('/api/token/', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
+  const response = await fetchAPI('/api/token/', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
 
-    if (response.error) {
-      throw new Error(response.error);
-    }
-
-    // Store tokens in localStorage
-    if (response.access && response.refresh) {
-      localStorage.setItem('accessToken', response.access);
-      localStorage.setItem('refreshToken', response.refresh);
-    }
-
-    return response;
-  } catch (error) {
-    console.error('Login failed:', error);
-    throw error;
+  if (response.error) {
+    return response; // Return error response instead of throwing
   }
+
+  // Store tokens in localStorage
+  if (response.access && response.refresh) {
+    localStorage.setItem('accessToken', response.access);
+    localStorage.setItem('refreshToken', response.refresh);
+    
+    // Store user info if available
+    if (response.user) {
+      localStorage.setItem('user', JSON.stringify(response.user));
+    }
+  }
+
+  return response;
 };
 
 export const signupUser = async (userData) => {
-  try {
-    const response = await fetchAPI('/api/register/', {
-      method: 'POST',
-      body: JSON.stringify(userData),
-    });
+  const response = await fetchAPI('/api/register/', {
+    method: 'POST',
+    body: JSON.stringify(userData),
+  });
 
-    if (response.error) {
-      throw new Error(response.error);
-    }
-
-    // Store tokens in localStorage if they're returned
-    if (response.access && response.refresh) {
-      localStorage.setItem('accessToken', response.access);
-      localStorage.setItem('refreshToken', response.refresh);
-    }
-
-    return response;
-  } catch (error) {
-    console.error('Signup failed:', error);
-    throw error;
+  if (response.error) {
+    return response; // Return error response instead of throwing
   }
+
+  // Store user info if available (registration doesn't return tokens by default)
+  if (response.user) {
+    localStorage.setItem('user', JSON.stringify(response.user));
+  }
+
+  return response;
 };

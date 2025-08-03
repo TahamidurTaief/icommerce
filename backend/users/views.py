@@ -2,6 +2,7 @@
 from rest_framework import status, generics, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
@@ -9,7 +10,8 @@ from .models import User
 from .serializers import (
     CustomTokenObtainPairSerializer, 
     UserRegistrationSerializer, 
-    UserSerializer
+    UserSerializer,
+    RegisterSerializer  # Add the new RegisterSerializer
 )
 from .permissions import (
     IsOwnerOrAdmin, IsAdmin, IsCustomer, IsSeller, 
@@ -81,6 +83,106 @@ class UserRegistrationView(generics.CreateAPIView):
             'success': False,
             'message': 'Validation failed',
             'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RegisterView(generics.CreateAPIView):
+    """
+    Simple registration view using RegisterSerializer
+    Accepts: name, email, password, confirm_password
+    Returns: user's basic info (id, name, email)
+    """
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        """
+        Handle user registration
+        """
+        serializer = self.get_serializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                # Save the user (password will be automatically hashed)
+                user = serializer.save()
+                
+                # Return user's basic info as specified
+                return Response({
+                    'success': True,
+                    'message': 'User registered successfully',
+                    'user': serializer.to_representation(user)  # Returns id, name, email
+                }, status=status.HTTP_201_CREATED)
+                
+            except Exception as e:
+                return Response({
+                    'success': False,
+                    'message': 'Registration failed',
+                    'error': str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # If serializer is not valid, return validation errors
+        return Response({
+            'success': False,
+            'message': 'Validation failed',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RegisterAPIView(APIView):
+    """
+    RegisterAPIView using APIView for user registration
+    
+    POST /api/register/
+    - Validates data using RegisterSerializer
+    - On success: returns status 201 and user data
+    - On failure: returns errors like "Email already exists"
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        """
+        Handle POST request for user registration
+        """
+        serializer = RegisterSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                # Save the user (password will be automatically hashed)
+                user = serializer.save()
+                
+                # Return user's basic info (id, name, email) with 201 status
+                return Response({
+                    'success': True,
+                    'message': 'User registered successfully',
+                    'user': serializer.to_representation(user)
+                }, status=status.HTTP_201_CREATED)
+                
+            except Exception as e:
+                # Handle any unexpected errors during user creation
+                return Response({
+                    'success': False,
+                    'message': 'Registration failed',
+                    'error': str(e)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # Return validation errors with detailed messages
+        errors = serializer.errors
+        
+        # Customize error messages for better user experience
+        formatted_errors = {}
+        for field, error_list in errors.items():
+            if field == 'email' and any('already exists' in str(error) for error in error_list):
+                formatted_errors[field] = ['Email already exists']
+            elif field == 'confirm_password':
+                formatted_errors[field] = error_list
+            else:
+                formatted_errors[field] = error_list
+        
+        return Response({
+            'success': False,
+            'message': 'Validation failed',
+            'errors': formatted_errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
 

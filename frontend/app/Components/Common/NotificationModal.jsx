@@ -33,14 +33,28 @@ const NotificationModal = ({
   };
 
   const modalVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    hidden: { 
+      opacity: 0, 
+      y: -20, 
+      scale: 0.8,
+    },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { type: "spring", damping: 25, stiffness: 200 },
+      transition: { 
+        type: "spring", 
+        damping: 20, 
+        stiffness: 300,
+        duration: 0.5
+      },
     },
-    exit: { opacity: 0, y: 30, scale: 0.95 },
+    exit: { 
+      opacity: 0, 
+      y: 10, 
+      scale: 0.9,
+      transition: { duration: 0.3 }
+    },
   };
 
   if (!isOpen) return null;
@@ -71,9 +85,14 @@ const NotificationModal = ({
 
             <div className="flex flex-col items-center">
               <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.1 }}
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 300, 
+                  damping: 15, 
+                  delay: 0.2 
+                }}
               >
                 {icons[status]}
               </motion.div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
 
 // Create the context to be consumed by components
 const AuthContext = createContext(null);
@@ -14,6 +14,80 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalView, setAuthModalView] = useState("login"); // Can be 'login' or 'signup'
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check authentication status on mount
+  useEffect(() => {
+    checkAuthStatus();
+    
+    // Listen for auth required events (from 401 responses)
+    const handleAuthRequired = (event) => {
+      const reason = event.detail?.reason || 'Authentication required';
+      console.log('Auth required:', reason);
+      
+      // Clear user state
+      setUser(null);
+      setIsAuthenticated(false);
+      
+      // Open login modal
+      openAuthModal('login');
+    };
+    
+    window.addEventListener('authRequired', handleAuthRequired);
+    
+    return () => {
+      window.removeEventListener('authRequired', handleAuthRequired);
+    };
+  }, []);
+
+  // Check if user is authenticated
+  const checkAuthStatus = () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('accessToken');
+      const userData = localStorage.getItem('user');
+      
+      if (token && userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          logout();
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    }
+  };
+
+  // Login function to update auth state
+  const login = (userData, tokens) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+    
+    // Store tokens and user data
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('accessToken', tokens.access);
+      localStorage.setItem('refreshToken', tokens.refresh);
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
+  };
+
+  // Logout function to clear auth state
+  const logout = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+    
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('redirectAfterLogin');
+    }
+  };
 
   // Opens the authentication modal, defaulting to the 'login' view
   const openAuthModal = (view = "login") => {
@@ -34,10 +108,15 @@ export const AuthProvider = ({ children }) => {
   const value = {
     isAuthModalOpen,
     authModalView,
+    user,
+    isAuthenticated,
     openAuthModal,
     closeAuthModal,
     switchToLogin,
     switchToSignup,
+    login,
+    logout,
+    checkAuthStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -9,11 +9,17 @@ class Color(models.Model):
     name = models.CharField(max_length=50, unique=True, help_text="e.g., Red, Ocean Blue")
     hex_code = models.CharField(max_length=7, unique=True, help_text="e.g., #FF0000")
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
 class Size(models.Model):
     name = models.CharField(max_length=50, unique=True, help_text="e.g., S, M, L, XL, 42")
+
+    class Meta:
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -22,8 +28,11 @@ class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
     slug = models.SlugField(unique=True)
+    
     class Meta:
         verbose_name_plural = "Categories"
+        ordering = ['name']
+        
     def __str__(self):
         return self.name
 
@@ -32,8 +41,11 @@ class SubCategory(models.Model):
     image = models.ImageField(upload_to='subcategories/', blank=True, null=True)
     slug = models.SlugField(unique=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
+    
     class Meta:
         unique_together = ('name', 'category')
+        ordering = ['category__name', 'name']
+        
     def __str__(self):
         return f"{self.name} ({self.category.name})"
 

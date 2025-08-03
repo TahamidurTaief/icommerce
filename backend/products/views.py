@@ -18,7 +18,7 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 100
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.filter(is_active=True).select_related('shop', 'sub_category__category').prefetch_related('colors', 'sizes', 'reviews')
+    queryset = Product.objects.filter(is_active=True).select_related('shop', 'sub_category__category').prefetch_related('colors', 'sizes', 'reviews').order_by('-created_at')
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]  # Changed to AllowAny for public read access
     filterset_class = ProductFilter
@@ -97,7 +97,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             raise ValidationError("You do not have a shop to add products to.")
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
     lookup_field = 'slug'
     permission_classes = [permissions.AllowAny]
@@ -131,7 +131,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
             )
 
 class SubCategoryViewSet(viewsets.ModelViewSet):
-    queryset = SubCategory.objects.all()
+    queryset = SubCategory.objects.all().order_by('category__name', 'name')
     serializer_class = SubCategorySerializer
     lookup_field = 'slug'
     permission_classes = [permissions.AllowAny]
@@ -165,7 +165,7 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
             )
 
 class ColorViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Color.objects.all()
+    queryset = Color.objects.all().order_by('name')
     serializer_class = ColorSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -198,7 +198,7 @@ class ColorViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
 class SizeViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Size.objects.all()
+    queryset = Size.objects.all().order_by('name')
     serializer_class = SizeSerializer
     permission_classes = [permissions.AllowAny]
 

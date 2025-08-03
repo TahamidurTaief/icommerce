@@ -3,6 +3,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from .models import Shop
 from .serializers import ShopSerializer
+from users.permissions import IsSellerOrAdmin
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -10,8 +11,19 @@ logger = logging.getLogger(__name__)
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = Shop.objects.all()   
     serializer_class = ShopSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     lookup_field = 'slug'
+
+    def get_permissions(self):
+        """
+        Override to apply different permissions based on the action.
+        """
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            # Write operations require seller or admin permissions
+            self.permission_classes = [IsSellerOrAdmin]
+        else:
+            # Read operations are public
+            self.permission_classes = [permissions.AllowAny]
+        return super().get_permissions()
 
     def list(self, request, *args, **kwargs):
         """Override list method to add proper error handling and logging."""
