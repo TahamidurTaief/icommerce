@@ -28,7 +28,7 @@ const ShippingMethodModal = ({ isOpen, onClose, shippingMethod }) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 flex items-center justify-center p-4"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
@@ -36,7 +36,7 @@ const ShippingMethodModal = ({ isOpen, onClose, shippingMethod }) => {
           onClick={onClose}
         >
           <motion.div
-            className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 relative"
+            className="bg-[var(--color-surface)] rounded-lg p-6 max-w-md w-full mx-4 relative z-50"
             variants={modalVariants}
             onClick={(e) => e.stopPropagation()}
           >

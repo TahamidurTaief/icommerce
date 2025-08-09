@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 
 import { useCheckout } from "@/app/contexts/CheckoutContext";
+import { useModal } from "@/app/contexts/ModalContext";
+import { useAuth } from "@/app/contexts/AuthContext";
+import { handleCheckoutSuccess } from "@/app/lib/checkoutUtils";
 import CheckoutSteps from "../Cart/CheckoutSteps";
 import CheckoutForm from "../Cart/CheckoutForm";
 import OrderPaymentModal from "../Payment/OrderPaymentModal";
@@ -20,6 +22,8 @@ import { CouponData } from "@/app/lib/Data/CouponData";
 const ContextCheckoutProcess = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { showModal } = useModal();
+  const { isAuthenticated } = useAuth();
 
   const {
     cartItems,
@@ -39,30 +43,67 @@ const ContextCheckoutProcess = () => {
 
   const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
 
+  // Listen for authentication changes to re-open payment modal after login
+  useEffect(() => {
+    if (isAuthenticated) {
+      const pendingPaymentAction = localStorage.getItem('pendingPaymentAction');
+      if (pendingPaymentAction) {
+        localStorage.removeItem('pendingPaymentAction');
+        // Re-open the payment modal after successful login
+        setPaymentModalOpen(true);
+      }
+    }
+  }, [isAuthenticated]);
+
   const handleApplyCoupon = (code) => {
     const coupon = CouponData.find((c) => c.code.toLowerCase() === code.toLowerCase());
     if (coupon) {
       applyCoupon(coupon);
-      toast.success(`Coupon "${coupon.code}" applied!`);
+      showModal({
+        status: 'success',
+        title: 'Coupon Applied!',
+        message: `Coupon "${coupon.code}" applied successfully!`,
+        primaryActionText: 'Continue'
+      });
     } else {
-      toast.error("Invalid coupon code.");
+      showModal({
+        status: 'error',
+        title: 'Invalid Coupon',
+        message: 'The coupon code you entered is not valid.',
+        primaryActionText: 'Try Again'
+      });
     }
   };
 
   const handlePaymentSelection = (method) => {
     if (isCartEmpty) {
-      toast.error("Your cart is empty.");
+      showModal({
+        status: 'warning',
+        title: 'Empty Cart',
+        message: 'Your cart is empty. Please add items before proceeding.',
+        primaryActionText: 'Shop Now'
+      });
       return;
     }
 
     const isUserDetailsComplete = Object.values(userDetails).every(value => value.trim() !== "");
     if (!isUserDetailsComplete) {
-      toast.error("Please fill out all delivery details first.");
+      showModal({
+        status: 'warning',
+        title: 'Incomplete Details',
+        message: 'Please fill out all delivery details first.',
+        primaryActionText: 'Complete Details'
+      });
       return;
     }
     
     if (!isShippingSelected) {
-      toast.error("Please select a shipping method.");
+      showModal({
+        status: 'warning',
+        title: 'Shipping Required',
+        message: 'Please select a shipping method.',
+        primaryActionText: 'Select Shipping'
+      });
       return;
     }
     
@@ -70,7 +111,7 @@ const ContextCheckoutProcess = () => {
     setPaymentModalOpen(true);
   };
 
-  const handleConfirmPayment = (response) => {
+  const handleConfirmPayment = async (response) => {
     console.log("Order Confirmed:", {
       response,
       userDetails,
@@ -79,10 +120,19 @@ const ContextCheckoutProcess = () => {
       shippingMethod: selectedShippingMethod,
     });
 
-    toast.success("Order Placed Successfully!");
-    
-    // Reset checkout state
-    resetCheckout();
+    // Handle checkout success - clears cart and resets state
+    await handleCheckoutSuccess(response, {
+      clearCart: true,
+      showNotification: false // We'll show our own modal
+    });
+
+    showModal({
+      status: 'success',
+      title: 'Order Placed!',
+      message: 'Your order has been placed successfully!',
+      primaryActionText: 'View Order',
+      secondaryActionText: 'Continue Shopping'
+    });
     
     // The OrderPaymentModal will handle redirection to confirmation page
   };

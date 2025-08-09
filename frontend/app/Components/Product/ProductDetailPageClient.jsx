@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
-import { toast } from "react-toastify";
+import { useMessage } from "@/context/MessageContext";
 import { motion } from "framer-motion";
 import ImageGallery from "./ImageGallery";
 import ProductInfo from "./ProductInfo";
@@ -17,6 +17,9 @@ export default function ProductDetailPageClient({ product }) {
   // State for cart and quantity
   const [quantity, setQuantity] = useState(1);
   const [isInCart, setIsInCart] = useState(false);
+  
+  // Get message context methods
+  const { showSuccess, showError } = useMessage();
 
   // A unique ID for the product variant to manage cart state accurately
   const variantId = `${product.id}-${selectedColor?.id || 'c'}-${selectedSize?.id || 's'}`;
@@ -49,7 +52,7 @@ export default function ProductDetailPageClient({ product }) {
     const updatedCart = [...cartItems, newItem];
     localStorage.setItem('cartItems', JSON.stringify(updatedCart));
     setIsInCart(true);
-    toast.success(`${product.name} added to cart!`);
+    showSuccess(`${product.name} added to cart!`, 'Added to Cart');
   };
 
   // Handler to remove the product variant from the cart
@@ -60,7 +63,7 @@ export default function ProductDetailPageClient({ product }) {
 
     localStorage.setItem('cartItems', JSON.stringify(updatedCart));
     setIsInCart(false);
-    toast.error(`${product.name} removed from cart.`);
+    showSuccess(`${product.name} removed from cart`, 'Removed from Cart');
   };
   
   // Memoize the list of all product images to prevent unnecessary recalculations

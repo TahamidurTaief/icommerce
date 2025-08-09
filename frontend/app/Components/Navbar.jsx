@@ -37,6 +37,9 @@ const navLinks = [
   { name: "Order Track", href: "/track-order" },
 ];
 
+// Predefined widths for skeleton loaders to avoid hydration issues
+const skeletonWidths = [65, 72, 58, 80, 75, 62];
+
 const ThemeToggle = () => {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -276,7 +279,7 @@ const NavbarSkeleton = () => (
               key={index}
               className="h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 rounded relative overflow-hidden"
               style={{
-                width: `${Math.random() * 40 + 40}px`,
+                width: `${skeletonWidths[index]}px`,
                 backgroundSize: '200% 100%',
               }}
               animate={{

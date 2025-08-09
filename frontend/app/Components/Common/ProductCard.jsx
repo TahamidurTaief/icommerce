@@ -5,7 +5,6 @@ import Link from "next/link";
 import { LuShoppingCart, LuHeart, LuEye } from "react-icons/lu";
 import { FiX } from "react-icons/fi";
 import { useState } from "react";
-import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import { useModal } from "@/app/contexts/ModalContext";
 
@@ -51,7 +50,12 @@ const ProductCard = ({ productData }) => {
     e.preventDefault();
     e.stopPropagation();
     setIsWishlisted(!isWishlisted);
-    toast.info(!isWishlisted ? `${productData?.name} added to wishlist!` : `${productData?.name} removed from wishlist!`);
+    showModal({
+      status: 'success',
+      title: !isWishlisted ? 'Added to Wishlist' : 'Removed from Wishlist',
+      message: !isWishlisted ? `${productData?.name} added to wishlist!` : `${productData?.name} removed from wishlist!`,
+      primaryActionText: 'Continue Shopping'
+    });
   };
 
   const handleQuickView = (e) => {

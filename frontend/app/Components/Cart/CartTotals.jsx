@@ -39,28 +39,47 @@ const CartTotals = ({
           }}
           transition={{ duration: 0.3 }}
         >
-          <div className="flex items-center gap-2">
-            <FiTruck className={`w-4 h-4 ${hasShippingSelected ? 'text-blue-600' : 'text-[var(--color-text-secondary)]'}`} />
-            <span className="text-[var(--color-text-secondary)]">
-              {shippingMethodName || "Shipping"}
-            </span>
-          </div>
-          <div className="text-right">
-            {hasShippingSelected ? (
-              <motion.span 
-                className={`font-semibold ${isShippingFree ? 'text-green-600' : 'text-[var(--color-text-primary)]'}`}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                {isShippingFree ? "Free" : `$${shipping.toFixed(2)}`}
-              </motion.span>
-            ) : (
-              <span className="text-[var(--color-text-secondary)] text-sm italic">
-                Select method
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <FiTruck className={`w-4 h-4 ${hasShippingSelected ? 'text-blue-600' : 'text-[var(--color-text-secondary)]'}`} />
+              <span className="text-[var(--color-text-secondary)]">
+                {shippingMethodName || "Shipping"}
               </span>
-            )}
+            </div>
+            <div className="text-right">
+              {hasShippingSelected ? (
+                <motion.span 
+                  className={`font-semibold ${isShippingFree ? 'text-green-600' : 'text-[var(--color-text-primary)]'}`}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {isShippingFree ? "Free" : `$${shipping.toFixed(2)}`}
+                </motion.span>
+              ) : (
+                <span className="text-[var(--color-text-secondary)] text-sm italic">
+                  Select method
+                </span>
+              )}
+            </div>
           </div>
+          
+          {/* Delivery Time Alert Card */}
+          {hasShippingSelected && selectedShippingMethod?.delivery_estimated_time && (
+            <motion.div 
+              className="mt-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                  Expected delivery: {selectedShippingMethod.delivery_estimated_time}
+                </span>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       )}
 

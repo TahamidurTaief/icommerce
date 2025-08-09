@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiCreditCard, FiSmartphone, FiDollarSign, FiLoader, FiCheckCircle } from "react-icons/fi";
 import { createOrderWithPayment } from "@/app/lib/api";
+import { handleCheckoutSuccess } from "@/app/lib/checkoutUtils";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 const PaymentMethodOption = ({ value, label, icon: Icon, selected, onChange, description }) => {
   return (
@@ -102,6 +104,7 @@ const OrderPaymentModal = ({
   redirectToConfirmation = true // New prop to control redirection
 }) => {
   const router = useRouter();
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [formData, setFormData] = useState({
     sender_number: '',
     transaction_id: '',
@@ -111,6 +114,9 @@ const OrderPaymentModal = ({
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [paymentAccounts, setPaymentAccounts] = useState([]);
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [fetchedAdminAccountNumber, setFetchedAdminAccountNumber] = useState('');
 
   const paymentMethods = [
     {
@@ -162,6 +168,42 @@ const OrderPaymentModal = ({
     }
   }, [isOpen]);
 
+  // Fetch payment accounts when modal opens
+  useEffect(() => {
+    const fetchPaymentAccounts = async () => {
+      if (!isOpen) return;
+      
+      setLoadingAccounts(true);
+      try {
+        // Use the correct backend API URL
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        const response = await fetch(`${API_BASE_URL}/api/payment/accounts/`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('🏦 Payment accounts loaded:', data);
+          
+          // Extract accounts array from response
+          const accounts = data.accounts || [];
+          setPaymentAccounts(accounts);
+          
+          // Set the first admin account number as default
+          if (accounts.length > 0 && accounts[0].number) {
+            setFetchedAdminAccountNumber(accounts[0].number);
+            console.log('✅ Admin account number set:', accounts[0].number);
+          }
+        } else {
+          console.error('Failed to fetch payment accounts:', response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching payment accounts:', error);
+      } finally {
+        setLoadingAccounts(false);
+      }
+    };
+
+    fetchPaymentAccounts();
+  }, [isOpen]);
+
   const validateForm = () => {
     const newErrors = {};
     
@@ -203,17 +245,45 @@ const OrderPaymentModal = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    console.log('🚀 Payment submission started...');
+    console.log('📝 Form data:', formData);
+    console.log('🔐 Is authenticated:', isAuthenticated);
+    console.log('🏦 Admin account number:', fetchedAdminAccountNumber);
+    
+    // Check authentication first
+    if (!isAuthenticated) {
+      console.log('❌ User not authenticated, opening login modal');
+      // Store context that user was trying to confirm payment
+      localStorage.setItem('pendingPaymentAction', 'true');
+      
+      // Close payment modal and open login modal directly
+      onClose();
+      openAuthModal('login');
       return;
     }
+    
+    console.log('🔍 Starting form validation...');
+    if (!validateForm()) {
+      console.log('❌ Form validation failed');
+      return;
+    }
+    console.log('✅ Form validation passed');
 
     setIsSubmitting(true);
+    console.log('⏳ Setting isSubmitting to true');
     
     try {
       // Calculate cart subtotal if not provided
       const calculatedSubtotal = cartSubtotal || cartItems.reduce(
         (sum, item) => sum + ((item.price || item.unit_price) * item.quantity), 0
       );
+      
+      console.log('📦 Preparing order data...');
+      console.log('🛒 Cart items:', cartItems);
+      console.log('🏠 Shipping address:', shippingAddress);
+      console.log('🚚 Shipping method:', shippingMethod);
+      console.log('💰 Total amount:', totalAmount);
+      console.log('💵 Calculated subtotal:', calculatedSubtotal);
       
       const orderData = {
         total_amount: totalAmount,
@@ -223,6 +293,7 @@ const OrderPaymentModal = ({
         sender_number: formData.sender_number,
         transaction_id: formData.transaction_id,
         payment_method: formData.payment_method,
+        admin_account_number: fetchedAdminAccountNumber || adminAccountNumber,
         items: cartItems.map(item => ({
           product: item.product_id || item.id,
           color: item.color_id,
@@ -232,12 +303,15 @@ const OrderPaymentModal = ({
         }))
       };
 
-      // Add user details if provided (for guest checkout or validation)
-      if (userDetails) {
-        if (userDetails.name) orderData.customer_name = userDetails.name;
-        if (userDetails.email) orderData.customer_email = userDetails.email;
-        if (userDetails.phone) orderData.customer_phone = userDetails.phone;
-      }
+      // Ensure required Order model fields are provided
+      // Use userDetails if available, otherwise use reasonable defaults
+      orderData.customer_name = userDetails?.name?.trim() || 'Valued Customer';
+      orderData.customer_email = userDetails?.email?.trim() || 'customer@temp.com';
+      orderData.customer_phone = userDetails?.phone?.trim() || '+1234567890';
+      
+      // Generate a tracking number (required field)
+      // In a real system, this would come from the shipping provider
+      orderData.tracking_number = `TRK-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
       console.log('🚀 Creating order with payload:', {
         ...orderData,
@@ -249,10 +323,59 @@ const OrderPaymentModal = ({
       const response = await createOrderWithPayment(orderData);
       
       if (response.error) {
-        throw new Error(response.error);
+        // Check if it's an authentication error
+        if (response.error.includes('Authentication required') || response.error.includes('login')) {
+          // Store context that user was trying to confirm payment
+          localStorage.setItem('pendingPaymentAction', 'true');
+          
+          // Close payment modal and open login modal directly
+          onClose();
+          openAuthModal('login');
+          return;
+        } else {
+          throw new Error(response.error);
+        }
+      }
+      
+      // Handle validation errors specifically
+      if (response.success === false && response.errors) {
+        console.error('❌ Order validation failed:', response.errors);
+        
+        // Convert API validation errors to user-friendly messages
+        let errorMessage = 'Order validation failed:\n';
+        
+        if (response.errors.shipping_address) {
+          errorMessage += '• Please select a valid shipping address\n';
+        }
+        if (response.errors.shipping_method) {
+          errorMessage += '• Please select a valid shipping method\n';
+        }
+        if (response.errors.items) {
+          errorMessage += '• There was an issue with your cart items\n';
+        }
+        if (response.errors.customer_name) {
+          errorMessage += '• Customer name is required\n';
+        }
+        if (response.errors.customer_email) {
+          errorMessage += '• Customer email is required\n';
+        }
+        if (response.errors.customer_phone) {
+          errorMessage += '• Customer phone is required\n';
+        }
+        
+        setErrors({
+          submit: errorMessage.trim()
+        });
+        return;
       }
 
       setSubmitSuccess(true);
+      
+      // Handle checkout success - this will clear the cart and perform cleanup
+      await handleCheckoutSuccess(response, {
+        clearCart: true,
+        showNotification: false // Modal already shows success state
+      });
       
       // Call onSuccess callback if provided
       if (onSuccess) {
@@ -262,14 +385,19 @@ const OrderPaymentModal = ({
       // Show success animation briefly, then redirect
       setTimeout(() => {
         if (redirectToConfirmation) {
-          // Store order data in sessionStorage for the confirmation page
+          // Store complete order data in sessionStorage for the confirmation page
           sessionStorage.setItem('orderConfirmation', JSON.stringify({
             orderId: response.order_id,
             orderNumber: response.order_number,
             totalAmount,
+            cartSubtotal: calculatedSubtotal,
             shippingMethod,
             paymentMethod: formData.payment_method,
-            transactionId: formData.transaction_id
+            transactionId: formData.transaction_id,
+            senderNumber: formData.sender_number,
+            cartItems: cartItems || [],
+            userDetails: userDetails || {},
+            createdAt: new Date().toISOString()
           }));
           
           // Navigate to confirmation page
@@ -281,11 +409,41 @@ const OrderPaymentModal = ({
       }, 2000);
       
     } catch (error) {
-      console.error('Order creation failed:', error);
+      console.error('❌ Order creation failed:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      
+      // Enhanced error handling with more specific messages
+      let errorMessage = 'Failed to create order. Please try again.';
+      
+      if (error.message) {
+        if (error.message.includes('Network error')) {
+          errorMessage = 'Network connection failed. Please check your internet connection and try again.';
+        } else if (error.message.includes('Authentication required')) {
+          errorMessage = 'Session expired. Please login again.';
+          // Trigger login modal
+          localStorage.setItem('pendingPaymentAction', 'true');
+          onClose();
+          openAuthModal('login');
+          return;
+        } else if (error.message.includes('Server returned HTML')) {
+          errorMessage = 'Server configuration error. The payment service is temporarily unavailable. Please contact support.';
+        } else if (error.message.includes('Resource not found')) {
+          errorMessage = 'Payment service not found. Please contact support or try again later.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      console.log('🚨 Setting error message:', errorMessage);
       setErrors({
-        submit: error.message || 'Failed to create order. Please try again.'
+        submit: errorMessage
       });
     } finally {
+      console.log('🏁 Payment submission completed, setting isSubmitting to false');
       setIsSubmitting(false);
     }
   };
@@ -296,7 +454,7 @@ const OrderPaymentModal = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 flex items-center justify-center p-4"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
@@ -304,12 +462,12 @@ const OrderPaymentModal = ({
           onClick={onClose}
         >
           <motion.div
-            className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
+            className="bg-[var(--color-surface)] rounded-lg max-w-md w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col z-50"
             variants={modalVariants}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Payment Information
               </h2>
@@ -322,162 +480,184 @@ const OrderPaymentModal = ({
               </button>
             </div>
 
-            {/* Success State */}
-            {submitSuccess && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-6 text-center"
-              >
-                <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                  <FiCheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Order Created Successfully!
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Your order has been submitted and is being processed.
-                </p>
-              </motion.div>
-            )}
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Success State */}
+              {submitSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-6 text-center"
+                >
+                  <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <FiCheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Order Created Successfully!
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Your order has been submitted and is being processed.
+                  </p>
+                </motion.div>
+              )}
 
-            {/* Form */}
-            {!submitSuccess && (
-              <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                {/* Admin Account Number (Read-only) */}
-                {adminAccountNumber && (
-                  <FormField label="Admin Account Number">
-                    <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                      <FiDollarSign className="text-gray-500 mr-2" size={16} />
-                      <span className="text-gray-900 dark:text-white font-medium">
-                        {adminAccountNumber}
-                      </span>
-                      <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                        (System Generated)
-                      </span>
+              {/* Form Content - No longer a form tag here */}
+              {!submitSuccess && (
+                <div className="p-6 space-y-6">
+                  {/* Admin Account Number (Read-only) */}
+                  {(fetchedAdminAccountNumber || adminAccountNumber) && (
+                    <FormField label="Send Payment To">
+                      <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <FiDollarSign className="text-blue-600 dark:text-blue-400 mr-2" size={16} />
+                        <div className="flex-1">
+                          <span className="text-gray-900 dark:text-white font-medium text-lg">
+                            {fetchedAdminAccountNumber || adminAccountNumber}
+                          </span>
+                          {loadingAccounts && (
+                            <div className="flex items-center mt-1">
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                              <span className="text-xs text-gray-500">Loading account...</span>
+                            </div>
+                          )}
+                          {!loadingAccounts && fetchedAdminAccountNumber && (
+                            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                              Official payment account
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </FormField>
+                  )}
+
+                  {/* Sender Number */}
+                  <FormField 
+                    label="Your Payment Number" 
+                    error={errors.sender_number}
+                    required
+                  >
+                    <input
+                      type="tel"
+                      value={formData.sender_number}
+                      onChange={(e) => handleInputChange('sender_number', e.target.value)}
+                      placeholder="e.g., 01712345678"
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      disabled={isSubmitting}
+                    />
+                  </FormField>
+
+                  {/* Transaction ID */}
+                  <FormField 
+                    label="Transaction ID" 
+                    error={errors.transaction_id}
+                    required
+                  >
+                    <input
+                      type="text"
+                      value={formData.transaction_id}
+                      onChange={(e) => handleInputChange('transaction_id', e.target.value)}
+                      placeholder="e.g., TXN123456789"
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      disabled={isSubmitting}
+                    />
+                  </FormField>
+
+                  {/* Payment Method */}
+                  <FormField 
+                    label="Payment Method" 
+                    error={errors.payment_method}
+                    required
+                  >
+                    <div className="space-y-3">
+                      {paymentMethods.map(method => (
+                        <PaymentMethodOption
+                          key={method.value}
+                          value={method.value}
+                          label={method.label}
+                          icon={method.icon}
+                          description={method.description}
+                          selected={formData.payment_method === method.value}
+                          onChange={(value) => handleInputChange('payment_method', value)}
+                        />
+                      ))}
                     </div>
                   </FormField>
-                )}
 
-                {/* Sender Number */}
-                <FormField 
-                  label="Your Payment Number" 
-                  error={errors.sender_number}
-                  required
-                >
-                  <input
-                    type="tel"
-                    value={formData.sender_number}
-                    onChange={(e) => handleInputChange('sender_number', e.target.value)}
-                    placeholder="e.g., 01712345678"
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    disabled={isSubmitting}
-                  />
-                </FormField>
-
-                {/* Transaction ID */}
-                <FormField 
-                  label="Transaction ID" 
-                  error={errors.transaction_id}
-                  required
-                >
-                  <input
-                    type="text"
-                    value={formData.transaction_id}
-                    onChange={(e) => handleInputChange('transaction_id', e.target.value)}
-                    placeholder="e.g., TXN123456789"
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    disabled={isSubmitting}
-                  />
-                </FormField>
-
-                {/* Payment Method */}
-                <FormField 
-                  label="Payment Method" 
-                  error={errors.payment_method}
-                  required
-                >
-                  <div className="space-y-3">
-                    {paymentMethods.map(method => (
-                      <PaymentMethodOption
-                        key={method.value}
-                        value={method.value}
-                        label={method.label}
-                        icon={method.icon}
-                        description={method.description}
-                        selected={formData.payment_method === method.value}
-                        onChange={(value) => handleInputChange('payment_method', value)}
-                      />
-                    ))}
-                  </div>
-                </FormField>
-
-                {/* Order Summary */}
-                {(totalAmount > 0 || shippingMethod) && (
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-3">
-                      Order Summary
-                    </h3>
-                    <div className="space-y-2 text-sm">
-                      {totalAmount > 0 && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Total Amount:</span>
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            ${totalAmount}
-                          </span>
-                        </div>
-                      )}
-                      {shippingMethod && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Shipping:</span>
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {shippingMethod.name} - ${shippingMethod.price}
-                          </span>
-                        </div>
-                      )}
+                  {/* Order Summary */}
+                  {(totalAmount > 0 || shippingMethod) && (
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-3">
+                        Order Summary
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        {totalAmount > 0 && (
+                          <div className="flex justify-between items-center mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                            <span className="text-lg font-semibold text-gray-900 dark:text-white">Total to pay:</span>
+                            <span className="text-xl font-bold text-orange-600 dark:text-orange-400">
+                              ৳ {(() => {
+                                const total = parseFloat(totalAmount) || 0;
+                                return total.toFixed(2);
+                              })()}
+                            </span>
+                          </div>
+                        )}
+                        {shippingMethod && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Shipping:</span>
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {shippingMethod.name} - ${shippingMethod.price}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Submit Error */}
-                {errors.submit && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg"
-                  >
-                    <p className="text-sm text-red-600 dark:text-red-400">
-                      {errors.submit}
-                    </p>
-                  </motion.div>
-                )}
-
-                {/* Actions */}
-                <div className="flex space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    disabled={isSubmitting}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <FiLoader className="animate-spin" size={16} />
-                        <span>Processing...</span>
-                      </>
-                    ) : (
-                      <span>Submit Payment</span>
-                    )}
-                  </button>
+                  {/* Submit Error */}
+                  {errors.submit && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg"
+                    >
+                      <p className="text-sm text-red-600 dark:text-red-400">
+                        {errors.submit}
+                      </p>
+                    </motion.div>
+                  )}
                 </div>
-              </form>
+              )}
+            </div>
+
+            {/* Fixed Footer with Actions */}
+            {!submitSuccess && (
+              <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-6">
+                <form onSubmit={handleSubmit}>
+                  <div className="flex space-x-3">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      disabled={isSubmitting}
+                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <FiLoader className="animate-spin" size={16} />
+                          <span>Processing...</span>
+                        </>
+                      ) : (
+                        <span>Submit Payment</span>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
             )}
           </motion.div>
         </motion.div>

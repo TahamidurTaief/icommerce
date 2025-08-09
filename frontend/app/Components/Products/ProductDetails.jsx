@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { useMessage } from "@/context/MessageContext";
 import { LuShoppingCart, LuHeart } from "react-icons/lu";
 
 export default function ProductDetails({ product }) {
@@ -18,6 +18,7 @@ export default function ProductDetails({ product }) {
       : null
   );
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const { showSuccess, showError } = useMessage();
 
   const sizes = Array.isArray(product.sizes)
     ? product.sizes
@@ -26,24 +27,17 @@ export default function ProductDetails({ product }) {
     : [];
 
   const handleAddToCart = () => {
-    toast.success(`${product.name} added to cart!`, {
-      position: "bottom-right",
-      autoClose: 2000,
-    });
+    showSuccess(`${product.name} added to cart!`, 'Added to Cart');
     // Add to cart logic here
   };
 
   const handleAddToWishlist = () => {
     setIsWishlisted(!isWishlisted);
-    toast.info(
-      isWishlisted
-        ? `${product.name} removed from wishlist!`
-        : `${product.name} added to wishlist!`,
-      {
-        position: "bottom-right",
-        autoClose: 2000,
-      }
-    );
+    if (isWishlisted) {
+      showSuccess(`${product.name} removed from wishlist!`, 'Wishlist Updated');
+    } else {
+      showSuccess(`${product.name} added to wishlist!`, 'Added to Wishlist');
+    }
   };
 
   return (

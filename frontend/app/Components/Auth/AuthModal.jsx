@@ -5,8 +5,8 @@ import { FiX } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useModal } from "@/app/contexts/ModalContext";
+import { useMessage } from "@/context/MessageContext";
 import { useState, useEffect } from "react";
-import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { signupUser, loginUser } from "@/app/lib/api";
@@ -40,6 +40,7 @@ const AuthModal = () => {
     login,
   } = useAuth();
   const { showModal } = useModal();
+  const { showSuccess, showError, showWarning } = useMessage();
   const router = useRouter();
   
   const [formData, setFormData] = useState({
@@ -76,7 +77,7 @@ const AuthModal = () => {
   };
 
   const handleGoogleLogin = () => {
-    toast.info("Google login feature is under development.");
+    showWarning("Google login feature is under development.", "Feature Coming Soon");
   };
 
   const handleSubmit = async (e) => {
@@ -87,7 +88,7 @@ const AuthModal = () => {
       if (authModalView === "signup") {
         // Validate password confirmation
         if (formData.password !== formData.confirmPassword) {
-          toast.error("Passwords do not match!");
+          showError("Passwords do not match!", "Validation Error");
           setIsSubmitting(false);
           return;
         }
@@ -122,7 +123,7 @@ const AuthModal = () => {
               onPrimaryAction: () => {},
             });
           } else {
-            toast.error(signupResponse.error);
+            showError(signupResponse.error, "Registration Failed");
           }
           setIsSubmitting(false);
           return;
@@ -140,7 +141,7 @@ const AuthModal = () => {
               const loginResponse = await loginUser(formData.email, formData.password);
               
               if (loginResponse.error) {
-                toast.error("Account created but auto-login failed. Please login manually.");
+                showError("Account created but auto-login failed. Please login manually.", "Auto-login Failed");
               } else {
                 // Update auth context state
                 login(loginResponse.user, {
@@ -148,7 +149,7 @@ const AuthModal = () => {
                   refresh: loginResponse.refresh
                 });
                 
-                toast.success(`Welcome ${loginResponse.user?.name || 'User'}!`);
+                showSuccess(`Welcome ${loginResponse.user?.name || 'User'}!`, "Welcome!");
               }
               
               // Close modals immediately
@@ -157,7 +158,7 @@ const AuthModal = () => {
               router.push('/'); // Redirect to home page
             } catch (loginError) {
               console.error('Auto-login failed:', loginError);
-              toast.error("Account created but auto-login failed. Please login manually.");
+              showError("Account created but auto-login failed. Please login manually.", "Auto-login Failed");
               switchToLogin();
             }
           },
@@ -199,7 +200,13 @@ const AuthModal = () => {
             
             // Handle redirect after login
             const redirectPath = localStorage.getItem('redirectAfterLogin');
-            if (redirectPath) {
+            const pendingPaymentAction = localStorage.getItem('pendingPaymentAction');
+            
+            if (pendingPaymentAction) {
+              localStorage.removeItem('pendingPaymentAction');
+              // Don't redirect anywhere, just stay on the current page
+              // The payment modal will be re-opened by the parent component
+            } else if (redirectPath) {
               localStorage.removeItem('redirectAfterLogin');
               router.push(redirectPath);
             } else {

@@ -168,7 +168,7 @@ const OrderSummaryCard = ({
                 <button
                   onClick={onProceedToPayment}
                   disabled={!isShippingSelected}
-                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+                  className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
                     isShippingSelected
                       ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
                       : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'

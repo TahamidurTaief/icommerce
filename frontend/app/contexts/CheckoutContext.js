@@ -16,8 +16,23 @@ export const useCheckout = () => {
 
 // Checkout Provider Component
 export const CheckoutProvider = ({ children }) => {
-  // Cart state
-  const [cartItems, setCartItems] = useState([]);
+  // Cart state - with sample data for testing
+  const [cartItems, setCartItems] = useState([
+    {
+      id: 1,
+      variantId: "1_default_default",
+      name: "Sample Product 1",
+      price: 29.99,
+      quantity: 2
+    },
+    {
+      id: 2,
+      variantId: "2_default_default",  
+      name: "Sample Product 2",
+      price: 49.99,
+      quantity: 1
+    }
+  ]);
   const [mounted, setMounted] = useState(false);
 
   // Shipping state
@@ -45,12 +60,37 @@ export const CheckoutProvider = ({ children }) => {
     const storedCart = localStorage.getItem('cartItems');
     if (storedCart) {
       try {
-        setCartItems(JSON.parse(storedCart));
+        const parsedItems = JSON.parse(storedCart);
+        // Ensure all items have proper unique identifiers
+        const itemsWithIds = parsedItems.map((item, index) => ({
+          ...item,
+          variantId: item.variantId || item.id || `cart-item-${index}`,
+          id: item.id || index + 1
+        }));
+        setCartItems(itemsWithIds);
       } catch (error) {
         console.error('Error parsing cart items:', error);
         setCartItems([]);
       }
     }
+
+    // Listen for cart cleared events from other parts of the app
+    const handleCartCleared = (event) => {
+      console.log('🔄 Cart cleared event received:', event.detail);
+      setCartItems([]);
+      // Reset related checkout state if this was due to checkout success
+      if (event.detail?.reason === 'checkout_success') {
+        setSelectedShippingMethod(null);
+        setSelectedPaymentMethod(null);
+        setAppliedCoupon(null);
+      }
+    };
+
+    window.addEventListener('cartCleared', handleCartCleared);
+    
+    return () => {
+      window.removeEventListener('cartCleared', handleCartCleared);
+    };
   }, []);
 
   // Save cart items to localStorage whenever cartItems change
@@ -165,7 +205,19 @@ export const CheckoutProvider = ({ children }) => {
 
   const clearCart = () => {
     setCartItems([]);
-    localStorage.removeItem('cartItems');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('cartItems');
+    }
+  };
+
+  // Clear cart after successful checkout
+  const clearCartAfterCheckout = () => {
+    console.log('🛒 Clearing cart after successful checkout');
+    clearCart();
+    // Optionally reset other checkout state but keep user details for convenience
+    setSelectedShippingMethod(null);
+    setSelectedPaymentMethod(null);
+    setAppliedCoupon(null);
   };
 
   // Coupon actions
@@ -212,6 +264,7 @@ export const CheckoutProvider = ({ children }) => {
     removeFromCart,
     updateCartItemQuantity,
     clearCart,
+    clearCartAfterCheckout,
     handleShippingMethodChange,
     setSelectedPaymentMethod,
     applyCoupon,

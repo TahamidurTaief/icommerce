@@ -3,20 +3,32 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import { useModal } from "../../contexts/ModalContext";
 import OrderSummary from "./OrderSummary";
 import CartTotals from "./CartTotals";
 import CartCoupon from "./CartCoupon";
 import { CouponData } from "@/app/lib/Data/CouponData";
+import { applyCouponUnified } from "../../../lib/couponUtils";
 import CheckoutSteps from "./CheckoutSteps";
 
 // This is the main component for the /cart page.
 // It orchestrates the entire cart view, including item management and order summary.
+
+// Helper function to ensure cart items have unique identifiers
+const ensureCartItemIds = (items) => {
+  return items.map((item, index) => ({
+    ...item,
+    variantId: item.variantId || item.id || `cart-item-${index}`,
+    id: item.id || index + 1
+  }));
+};
+
 const CartView = () => {
   const [cartItems, setCartItems] = useState([]);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const { showModal } = useModal();
 
   // Effect to load cart items from localStorage on component mount
   useEffect(() => {
@@ -24,7 +36,10 @@ const CartView = () => {
     const storedCart = localStorage.getItem("cartItems");
     if (storedCart) {
       try {
-        setCartItems(JSON.parse(storedCart));
+        const parsedItems = JSON.parse(storedCart);
+        // Ensure all items have proper unique identifiers
+        const itemsWithIds = ensureCartItemIds(parsedItems);
+        setCartItems(itemsWithIds);
       } catch (error) {
         console.error("Failed to parse cart from localStorage", error);
         localStorage.removeItem("cartItems");
@@ -55,19 +70,49 @@ const CartView = () => {
   // Handler to remove an item from the cart
   const handleRemoveItem = (variantId) => {
     setCartItems(cartItems.filter((item) => item.variantId !== variantId));
-    toast.info("Item removed from cart", { position: "bottom-right" });
+    showModal({
+      status: 'success',
+      title: 'Item Removed',
+      message: 'Item has been removed from your cart.',
+      primaryActionText: 'OK'
+    });
   };
 
   // Handler to apply a coupon code
-  const handleApplyCoupon = (code) => {
-    const coupon = CouponData.find(
-      (c) => c.code.toLowerCase() === code.toLowerCase()
-    );
-    if (coupon) {
-      setAppliedCoupon(coupon);
-      toast.success(`Coupon "${coupon.code}" applied!`, { position: "bottom-right" });
-    } else {
-      toast.error("Invalid coupon code.", { position: "bottom-right" });
+  const handleApplyCoupon = async (code) => {
+    try {
+      const result = await applyCouponUnified(code, cartItems, subtotal);
+      
+      if (result.success) {
+        setAppliedCoupon({
+          code: result.couponCode,
+          discountValue: result.discount,
+          message: result.message,
+          type: result.type || 'fixed',
+          source: result.source
+        });
+        showModal({
+          status: 'success',
+          title: 'Coupon Applied!',
+          message: result.message,
+          primaryActionText: 'Continue Shopping'
+        });
+      } else {
+        showModal({
+          status: 'error',
+          title: 'Coupon Error',
+          message: result.error,
+          primaryActionText: 'Try Again'
+        });
+      }
+    } catch (error) {
+      console.error('Error applying coupon:', error);
+      showModal({
+        status: 'error',
+        title: 'Coupon Error',
+        message: 'There was an error applying your coupon. Please try again.',
+        primaryActionText: 'Try Again'
+      });
     }
   };
 
@@ -75,10 +120,19 @@ const CartView = () => {
   const { subtotal, discountAmount, total } = useMemo(() => {
     const sub = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     let discount = 0;
-    if (appliedCoupon && sub >= (appliedCoupon.conditions?.minPurchase || 0)) {
-      discount = sub * (appliedCoupon.discountValue / 100);
+    
+    if (appliedCoupon) {
+      // If coupon has a fixed discount value (from unified system)
+      if (typeof appliedCoupon.discountValue === 'number') {
+        discount = appliedCoupon.discountValue;
+      }
+      // Legacy support for percentage coupons
+      else if (appliedCoupon.discountValue && sub >= (appliedCoupon.conditions?.minPurchase || 0)) {
+        discount = sub * (appliedCoupon.discountValue / 100);
+      }
     }
-    const finalTotal = sub - discount;
+    
+    const finalTotal = Math.max(0, sub - discount);
     return { subtotal: sub, discountAmount: discount, total: finalTotal };
   }, [cartItems, appliedCoupon]);
 

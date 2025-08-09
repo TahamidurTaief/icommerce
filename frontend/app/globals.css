@@ -528,3 +528,130 @@ html.dark .theme-toggle-moon {
 .animate-skeleton-breathe {
   animation: skeleton-breathe 2s ease-in-out infinite;
 }
+
+/* Additional modern skeleton animations */
+@keyframes skeleton-slide {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes skeleton-fade {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes skeleton-elastic {
+  0%, 100% {
+    transform: scaleX(1) scaleY(1);
+  }
+  50% {
+    transform: scaleX(1.05) scaleY(0.95);
+  }
+}
+
+.animate-skeleton-slide {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-skeleton-slide::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  animation: skeleton-slide 2s ease-in-out infinite;
+}
+
+.dark .animate-skeleton-slide::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+}
+
+.animate-skeleton-fade {
+  animation: skeleton-fade 1.5s ease-in-out infinite;
+}
+
+.animate-skeleton-elastic {
+  animation: skeleton-elastic 2s ease-in-out infinite;
+}
+
+/* Enhanced skeleton item with better gradients */
+.skeleton-item-enhanced {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: linear-gradient(
+    110deg,
+    #f0f0f0 8%,
+    #e8e8e8 18%,
+    #e8e8e8 33%,
+    #f0f0f0 43%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-wave 1.8s ease-in-out infinite;
+}
+
+.dark .skeleton-item-enhanced {
+  background: linear-gradient(
+    110deg,
+    #374151 8%,
+    #4b5563 18%,
+    #4b5563 33%,
+    #374151 43%
+  );
+  background-size: 200% 100%;
+}
+
+/* Skeleton loading with pulse overlay */
+.skeleton-pulse-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-pulse-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.3) 0%,
+    transparent 70%
+  );
+  animation: skeleton-pulse 2s ease-in-out infinite;
+}
+
+.dark .skeleton-pulse-overlay::after {
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+}

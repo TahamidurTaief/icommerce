@@ -29,7 +29,7 @@ const ShippingInfoModal = ({ isOpen, onClose, shippingMethod }) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 flex items-center justify-center p-4"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
@@ -37,7 +37,7 @@ const ShippingInfoModal = ({ isOpen, onClose, shippingMethod }) => {
           onClick={onClose}
         >
           <motion.div
-            className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 relative"
+            className="bg-[var(--color-surface)] rounded-lg p-6 max-w-md w-full mx-4 relative z-50"
             variants={modalVariants}
             onClick={(e) => e.stopPropagation()}
           >
@@ -65,13 +65,27 @@ const ShippingInfoModal = ({ isOpen, onClose, shippingMethod }) => {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <h4 className="font-semibold text-gray-900 dark:text-white">
-                  Description
-                </h4>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {shippingMethod.description || "No description available for this shipping method."}
-                </p>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    Description
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {shippingMethod.description || "No description available for this shipping method."}
+                  </p>
+                </div>
+                
+                {shippingMethod.delivery_estimated_time && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                    <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      Estimated Delivery Time
+                    </h4>
+                    <p className="text-blue-700 dark:text-blue-300 font-medium">
+                      {shippingMethod.delivery_estimated_time}
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="mt-6">
@@ -114,7 +128,7 @@ const ShippingMethodCard = ({
   return (
     <motion.div
       className={`
-        relative bg-white dark:bg-gray-800 rounded-xl p-4 border-2 cursor-pointer transition-all
+        relative bg-white dark:bg-gray-800 rounded-lg p-4 border-2 cursor-pointer transition-all
         ${isSelected 
           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg' 
           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md'
@@ -166,12 +180,21 @@ const ShippingMethodCard = ({
 
         {/* Content */}
         <div className="flex-1 min-w-0 pr-6">
-          <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-            {method.title || method.name}
-          </h3>
-          <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-            ${method.price}
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <h3 className="font-medium lato text-gray-900 dark:text-white truncate">
+                {method.title || method.name}
+              </h3>
+              {method.delivery_estimated_time && (
+                <span className="inline-flex items-center lato px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-700 flex-shrink-0">
+                  {method.delivery_estimated_time}
+                </span>
+              )}
+            </div>
+            <p className="text-lg font-bold text-blue-600 dark:text-blue-400 ml-2">
+              ${method.price}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -191,7 +214,7 @@ const ShippingMethodCard = ({
 
 // Loading Skeleton
 const ShippingMethodSkeleton = () => (
-  <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700 animate-pulse">
+  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-gray-200 dark:border-gray-700 animate-pulse">
     <div className="flex items-center space-x-3">
       <div className="w-5 h-5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
       <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>

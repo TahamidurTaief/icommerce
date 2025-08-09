@@ -18,14 +18,21 @@ const OrderSummary = ({ cartItems, onUpdateQuantity, onRemoveItem }) => {
       <div className="divide-y divide-[var(--color-border)]">
         <AnimatePresence>
           {cartItems.length > 0 ? (
-            cartItems.map((item) => (
-              <CartItem
-                key={item.variantId}
-                item={item}
-                onUpdateQuantity={onUpdateQuantity}
-                onRemoveItem={onRemoveItem}
-              />
-            ))
+            cartItems.map((item, index) => {
+              // Generate a unique key prioritizing variantId, then id, then fallback to index
+              const uniqueKey = item.variantId || 
+                               (item.id ? `item-${item.id}` : null) || 
+                               `cart-item-${index}`;
+              
+              return (
+                <CartItem
+                  key={uniqueKey}
+                  item={item}
+                  onUpdateQuantity={onUpdateQuantity}
+                  onRemoveItem={onRemoveItem}
+                />
+              );
+            })
           ) : (
             <motion.div
               initial={{ opacity: 0 }}

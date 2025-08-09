@@ -1,8 +1,11 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
 import Link from "next/link";
 import { FiCheckCircle, FiAlertTriangle, FiXCircle, FiX } from "react-icons/fi";
+import playSound from "../../../lib/playSound";
+import useAudioContext from "../../hooks/useAudioContext";
 
 const icons = {
   success: <FiCheckCircle className="text-green-500 text-6xl mb-4" />,
@@ -26,7 +29,22 @@ const NotificationModal = ({
   onPrimaryAction,
   secondaryActionText,
   onSecondaryAction,
+  playAudio = true, // New prop to control audio playback
 }) => {
+  const { audioContext, isInitialized } = useAudioContext();
+  
+  // Play sound effect when modal opens
+  useEffect(() => {
+    if (isOpen && playAudio) {
+      // Small delay to ensure modal animation starts first
+      const soundTimeout = setTimeout(() => {
+        console.log('Attempting to play sound:', status);
+        playSound(status);
+      }, 200);
+
+      return () => clearTimeout(soundTimeout);
+    }
+  }, [isOpen, status, playAudio]);
   const backdropVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },

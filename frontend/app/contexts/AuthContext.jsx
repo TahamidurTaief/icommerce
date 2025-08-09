@@ -104,6 +104,14 @@ export const AuthProvider = ({ children }) => {
   const switchToLogin = () => setAuthModalView("login");
   const switchToSignup = () => setAuthModalView("signup");
 
+  // Function to get current access token
+  const getAccessToken = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('accessToken');
+    }
+    return null;
+  };
+
   // The value object contains all state and functions to be provided to consumers
   const value = {
     isAuthModalOpen,
@@ -117,6 +125,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     checkAuthStatus,
+    getAccessToken, // Add this helper function
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

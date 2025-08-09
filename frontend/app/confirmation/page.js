@@ -166,10 +166,18 @@ export default function ConfirmationPage() {
                   </div>
                   <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Transaction ID</span>
-                    <p className="font-semibold text-gray-900 dark:text-white">
+                    <p className="font-semibold text-gray-900 dark:text-white font-mono text-sm">
                       {orderData.transactionId}
                     </p>
                   </div>
+                  {orderData.senderNumber && (
+                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg md:col-span-2">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Payment Number Used</span>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {orderData.senderNumber}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -181,7 +189,7 @@ export default function ConfirmationPage() {
                     Shipping Information
                   </h3>
                   <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center mb-2">
                       <div>
                         <p className="font-semibold text-gray-900 dark:text-white">
                           {orderData.shippingMethod.title || orderData.shippingMethod.name}
@@ -193,22 +201,93 @@ export default function ConfirmationPage() {
                         )}
                       </div>
                       <p className="font-semibold text-gray-900 dark:text-white">
-                        ${orderData.shippingMethod.price}
+                        ৳ {parseFloat(orderData.shippingMethod.price || 0).toFixed(2)}
                       </p>
                     </div>
+                    
+                    {/* Delivery Address */}
+                    {orderData.userDetails && (
+                      <div className="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Delivery Address:
+                        </p>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {orderData.userDetails.name && <div>{orderData.userDetails.name}</div>}
+                          {orderData.userDetails.address && <div>{orderData.userDetails.address}</div>}
+                          {orderData.userDetails.city && orderData.userDetails.zip && (
+                            <div>{orderData.userDetails.city}, {orderData.userDetails.zip}</div>
+                          )}
+                          {orderData.userDetails.phone && <div>Phone: {orderData.userDetails.phone}</div>}
+                          {orderData.userDetails.email && <div>Email: {orderData.userDetails.email}</div>}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Order Total */}
+              {/* Order Items */}
+              {orderData.cartItems && orderData.cartItems.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <FiPackage className="mr-2" size={20} />
+                    Order Items ({orderData.cartItems.length})
+                  </h3>
+                  <div className="space-y-3">
+                    {orderData.cartItems.map((item, index) => (
+                      <div key={index} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              {item.name || `Product ${item.product_id || item.id}`}
+                            </p>
+                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              <span>Quantity: {item.quantity}</span>
+                              <span className="mx-2">•</span>
+                              <span>Unit Price: ৳ {parseFloat(item.price || item.unit_price || 0).toFixed(2)}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-gray-900 dark:text-white">
+                              ৳ {(parseFloat(item.price || item.unit_price || 0) * item.quantity).toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Order Total Breakdown */}
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Total Amount:
-                  </span>
-                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    ${orderData.totalAmount.toFixed(2)}
-                  </span>
+                <div className="space-y-3">
+                  {orderData.cartSubtotal && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        ৳ {parseFloat(orderData.cartSubtotal).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {orderData.shippingMethod && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400">Shipping:</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        ৳ {parseFloat(orderData.shippingMethod.price || 0).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Total Amount:
+                    </span>
+                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      ৳ {parseFloat(orderData.totalAmount || 0).toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

@@ -3,6 +3,9 @@ import { cache } from 'react';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
+// Debug API calls
+const DEBUG_API = true;
+
 // Helper function to get auth headers
 const getAuthHeaders = () => {
   if (typeof window !== 'undefined') {
@@ -45,14 +48,44 @@ async function fetchAPI(endpoint, options = {}) {
     ...options.headers 
   };
   
+  const url = `${API_BASE_URL}${endpoint}`;
+  
+  if (DEBUG_API) {
+    console.log('🌐 API Request:', {
+      url,
+      method: options.method || 'GET',
+      headers,
+      body: options.body ? JSON.parse(options.body) : null
+    });
+  }
+  
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, { 
+    const response = await fetch(url, { 
       ...options, 
       headers, 
       cache: 'no-store' 
     });
     
+    if (DEBUG_API) {
+      console.log('🌐 API Response:', {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        contentType: response.headers.get('content-type')
+      });
+    }
+    
     if (!response.ok) {
+        // Check if response is HTML (which indicates Django error page)
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('text/html')) {
+          console.error("Server returned HTML error page instead of JSON");
+          const htmlText = await response.text();
+          console.error("HTML Response:", htmlText.substring(0, 200));
+          return { error: `Server error: ${response.status} ${response.statusText}. The API endpoint may not exist or the server is misconfigured.` };
+        }
+        
         const errorData = await response.json().catch(() => ({ detail: response.statusText }));
         console.error("Backend Error:", errorData);
         
@@ -69,15 +102,48 @@ async function fetchAPI(endpoint, options = {}) {
         } else if (response.status === 403) {
           // Forbidden - user doesn't have permission
           return { error: errorData.detail || 'Access denied. You do not have permission to perform this action.' };
+        } else if (response.status === 404) {
+          // Not found - endpoint doesn't exist
+          return { error: `Resource not found: ${endpoint}` };
+        } else if (response.status >= 500) {
+          // Server error
+          return { error: 'Server error. Please try again later.' };
         } else {
           // Other errors
           return { error: errorData.detail || errorData.message || response.statusText };
         }
     }
-    return response.status === 204 ? null : await response.json();
+    
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (response.status === 204) {
+      return null;
+    } else if (contentType && contentType.includes('application/json')) {
+      const jsonData = await response.json();
+      if (DEBUG_API) {
+        console.log('🌐 API Success:', jsonData);
+      }
+      return jsonData;
+    } else {
+      console.error("Server returned non-JSON response:", contentType);
+      const textResponse = await response.text();
+      console.error("Text response:", textResponse.substring(0, 200));
+      return { error: 'Server returned unexpected response format' };
+    }
   } catch (error) {
     console.error("Fetch API failed:", endpoint, error);
-    return { error: error.message };
+    
+    // Check if it's a network error
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return { error: 'Network error. Please check your connection and ensure the server is running.' };
+    }
+    
+    // Check for JSON parsing errors
+    if (error.name === 'SyntaxError' && error.message.includes('JSON')) {
+      return { error: 'Invalid server response. The server may be returning HTML instead of JSON.' };
+    }
+    
+    return { error: error.message || 'An unexpected error occurred' };
   }
 }
 
@@ -149,7 +215,215 @@ export const getSizes = cache(async () => {
 export const getInitialHomeProducts = cache(async () => fetchAPI('/api/products/?page_size=12'));
 
 // Shipping fetches
-export const getShippingMethods = cache(async () => fetchAPI('/api/shipping-methods/'));
+export const getShippingMethods = cache(async () => {
+  const result = await fetchAPI('/api/shipping-methods/');
+  if (result?.error) {
+    console.warn('Shipping methods API not available, returning fallback:', result.error);
+    return [{
+      id: 1,
+      name: 'Standard Shipping',
+      price: 9.99,
+      description: '5-7 business days',
+      details: 'Standard delivery service with tracking included.',
+      estimated_delivery: '5-7 business days',
+      tracking_available: true
+    }];
+  }
+  
+  // Ensure price is always a number
+  if (Array.isArray(result)) {
+    return result.map(method => ({
+      ...method,
+      price: (() => {
+        const parsed = typeof method.price === 'number' ? method.price : parseFloat(method.price || 0);
+        return isNaN(parsed) ? 0 : parsed;
+      })()
+    }));
+  }
+  
+  return result;
+});
+
+// Get shipping price for specific quantity
+export const getShippingPriceForQuantity = async (methodId, quantity) => {
+  return fetchAPI(`/api/shipping-methods/${methodId}/price-for-quantity/?quantity=${quantity}`);
+};
+
+// Cart functions - Frontend cart uses localStorage, not backend API
+export const getCart = cache(async () => {
+  // Cart is handled on frontend via localStorage, not backend API
+  if (typeof window !== 'undefined') {
+    try {
+      const storedCart = localStorage.getItem('cartItems');
+      if (storedCart) {
+        const cartItems = JSON.parse(storedCart);
+        // Ensure price and quantity are always numbers for cart items
+        return Array.isArray(cartItems) ? cartItems.map(item => ({
+          ...item,
+          price: (() => {
+            const parsed = typeof item.price === 'number' ? item.price : parseFloat(item.price || 0);
+            return isNaN(parsed) ? 0 : parsed;
+          })(),
+          quantity: (() => {
+            const parsed = typeof item.quantity === 'number' ? item.quantity : parseInt(item.quantity || 1);
+            return isNaN(parsed) ? 1 : parsed;
+          })()
+        })) : [];
+      }
+    } catch (error) {
+      console.error('Error reading cart from localStorage:', error);
+    }
+  }
+  
+  // Return empty cart if no localStorage or error
+  return [];
+});
+
+export const addToCart = async (productId, quantity = 1, size = null, color = null) => {
+  // Cart is handled on frontend via localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      
+      // Create a unique variant ID based on product, size, and color
+      const variantId = `${productId}_${size || 'default'}_${color || 'default'}`;
+      
+      // Check if item already exists in cart
+      const existingItemIndex = cartItems.findIndex(item => item.variantId === variantId);
+      
+      if (existingItemIndex >= 0) {
+        // Update quantity if item exists
+        cartItems[existingItemIndex].quantity += quantity;
+      } else {
+        // Add new item to cart
+        cartItems.push({
+          id: productId,
+          variantId,
+          quantity,
+          size,
+          color,
+          // Note: You might want to fetch product details here to get name, price, etc.
+        });
+      }
+      
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+      return { success: true, cartItems };
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      return { error: 'Failed to add item to cart' };
+    }
+  }
+  
+  return { error: 'localStorage not available' };
+};
+
+export const updateCartItem = async (itemId, quantity) => {
+  // Cart is handled on frontend via localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      const itemIndex = cartItems.findIndex(item => item.variantId === itemId);
+      
+      if (itemIndex >= 0) {
+        cartItems[itemIndex].quantity = quantity;
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        return { success: true, cartItems };
+      }
+      
+      return { error: 'Item not found in cart' };
+    } catch (error) {
+      console.error('Error updating cart item:', error);
+      return { error: 'Failed to update cart item' };
+    }
+  }
+  
+  return { error: 'localStorage not available' };
+};
+
+export const removeFromCart = async (itemId) => {
+  // Cart is handled on frontend via localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      const updatedCart = cartItems.filter(item => item.variantId !== itemId);
+      
+      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+      return { success: true, cartItems: updatedCart };
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      return { error: 'Failed to remove item from cart' };
+    }
+  }
+  
+  return { error: 'localStorage not available' };
+};
+
+export const clearCart = async () => {
+  // Cart is handled on frontend via localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem('cartItems');
+      console.log('✅ Cart cleared from localStorage');
+      return { success: true, cartItems: [] };
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      return { error: 'Failed to clear cart' };
+    }
+  }
+  
+  return { error: 'localStorage not available' };
+};
+
+// Clear cart after successful checkout - specifically for post-order cleanup
+export const clearCartAfterCheckout = async () => {
+  console.log('🛒 Clearing cart after successful checkout');
+  const result = await clearCart();
+  
+  // Dispatch a custom event to notify components that cart has been cleared
+  if (typeof window !== 'undefined' && result.success) {
+    window.dispatchEvent(new CustomEvent('cartCleared', { 
+      detail: { reason: 'checkout_success' } 
+    }));
+  }
+  
+  return result;
+};
+
+// Coupon functions
+export const getCoupons = async () => fetchAPI('/api/coupons/');
+
+export const getActiveCoupons = cache(async () => {
+  const result = await fetchAPI('/api/coupons/');
+  if (result?.error) {
+    console.warn('Active coupons API not available, returning fallback:', result.error);
+    return [
+      { code: 'SAVE10', discount_type: 'percentage', discount_value: 10, minimum_amount: 0 },
+      { code: 'WELCOME15', discount_type: 'percentage', discount_value: 15, minimum_amount: 50 }
+    ];
+  }
+  // The backend already filters for active coupons in CouponViewSet.get_queryset()
+  return Array.isArray(result) ? result : result?.results || [];
+});
+
+export const validateCoupon = async (couponCode, cartItems, cartTotal = null, userId = null) => {
+  const requestBody = {
+    coupon_code: couponCode,
+    cart_items: cartItems
+  };
+
+  // Add optional parameters if provided
+  if (cartTotal !== null) {
+    requestBody.cart_total = cartTotal;
+  }
+  if (userId !== null) {
+    requestBody.user_id = userId;
+  }
+
+  return fetchAPI('/api/coupons/validate/', {
+    method: 'POST',
+    body: JSON.stringify(requestBody),
+  });
+};
 
 // Order fetches (requires authentication)
 export const getUserOrders = async () => fetchAPI('/api/orders/');
@@ -161,6 +435,90 @@ export const createOrderWithPayment = async (orderData) => {
     method: 'POST',
     body: JSON.stringify(orderData),
   });
+};
+
+// Confirm payment with transaction details
+export const confirmPayment = async (paymentData) => {
+  return fetchAPI('/api/orders/confirm-payment/', {
+    method: 'POST',
+    body: JSON.stringify(paymentData),
+  });
+};
+
+// Checkout data fetching function
+export const getCheckoutData = async () => {
+  try {
+    // Fetch all required data in parallel
+    const [cartResponse, shippingResponse, couponsResponse] = await Promise.allSettled([
+      getCart(),
+      getShippingMethods(),
+      getActiveCoupons()
+    ]);
+
+    // Handle cart items
+    let cartItems = [];
+    if (cartResponse.status === 'fulfilled' && !cartResponse.value?.error) {
+      cartItems = Array.isArray(cartResponse.value) ? cartResponse.value : cartResponse.value?.items || [];
+    } else {
+      console.error('Failed to fetch cart items:', cartResponse.reason || cartResponse.value?.error);
+      // Fallback to empty cart
+      cartItems = [];
+    }
+
+    // Handle shipping methods
+    let shippingMethods = [];
+    if (shippingResponse.status === 'fulfilled' && !shippingResponse.value?.error) {
+      shippingMethods = Array.isArray(shippingResponse.value) ? shippingResponse.value : shippingResponse.value?.results || [];
+    } else {
+      console.error('Failed to fetch shipping methods:', shippingResponse.reason || shippingResponse.value?.error);
+      // Fallback shipping method
+      shippingMethods = [{
+        id: 1,
+        name: 'Standard Shipping',
+        price: 9.99,
+        description: '5-7 business days',
+        details: 'Standard delivery service with tracking included.',
+        estimated_delivery: '5-7 business days',
+        tracking_available: true
+      }];
+    }
+
+    // Handle active coupons
+    let activeCoupons = [];
+    if (couponsResponse.status === 'fulfilled' && !couponsResponse.value?.error) {
+      activeCoupons = Array.isArray(couponsResponse.value) ? couponsResponse.value : couponsResponse.value?.results || [];
+    } else {
+      console.error('Failed to fetch active coupons:', couponsResponse.reason || couponsResponse.value?.error);
+      // Fallback to empty coupons array
+      activeCoupons = [];
+    }
+
+    return {
+      cartItems,
+      shippingMethods,
+      activeCoupons,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error fetching checkout data:', error);
+    
+    // Return fallback data
+    return {
+      cartItems: [],
+      shippingMethods: [{
+        id: 1,
+        name: 'Standard Shipping',
+        price: 9.99,
+        description: '5-7 business days',
+        details: 'Standard delivery service with tracking included.',
+        estimated_delivery: '5-7 business days',
+        tracking_available: true
+      }],
+      activeCoupons: [],
+      error: 'Failed to fetch checkout data',
+      timestamp: new Date().toISOString()
+    };
+  }
 };
 
 // Authentication functions

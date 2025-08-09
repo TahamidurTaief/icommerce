@@ -20,7 +20,10 @@ const useShippingMethods = () => {
       }
       
       const data = await response.json();
-      setShippingMethods(data || []);
+      
+      // Handle paginated response - extract results if it's a paginated response
+      const methods = data.results || data || [];
+      setShippingMethods(methods);
     } catch (err) {
       console.error('Error fetching shipping methods:', err);
       setError(err.message || 'Failed to fetch shipping methods');

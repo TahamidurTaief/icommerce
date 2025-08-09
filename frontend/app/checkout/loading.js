@@ -1,5 +1,5 @@
-import PageLoader from '../Components/Common/PageLoader';
+import CheckoutSkeleton from '../Components/Common/CheckoutSkeleton';
 
 export default function Loading() {
-  return <PageLoader />;
+  return <CheckoutSkeleton />;
 }
