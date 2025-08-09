@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
             reverse_sql="UPDATE orders_orderpayment SET admin_account_number = NULL WHERE admin_account_number = 'Not Set';"
         ),
         
-        # Now alter the fields to make them required
+        # Now alter the fields to make them required where safe
         migrations.AlterField(
             model_name='order',
             name='cart_subtotal',
@@ -59,15 +59,16 @@ class Migration(migrations.Migration):
             name='customer_phone',
             field=models.CharField(help_text='Required customer phone number', max_length=50),
         ),
+        # Keep shipping fields nullable to avoid NOT NULL failures on existing data
         migrations.AlterField(
             model_name='order',
             name='shipping_address',
-            field=models.ForeignKey(help_text='Required shipping address', on_delete=django.db.models.deletion.PROTECT, related_name='+', to='users.address'),
+            field=models.ForeignKey(help_text='Shipping address', on_delete=django.db.models.deletion.PROTECT, to='users.address', null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='order',
             name='shipping_method',
-            field=models.ForeignKey(help_text='Required shipping method', on_delete=django.db.models.deletion.PROTECT, to='orders.shippingmethod'),
+            field=models.ForeignKey(help_text='Shipping method', on_delete=django.db.models.deletion.PROTECT, to='orders.shippingmethod', null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='order',

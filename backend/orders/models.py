@@ -238,9 +238,11 @@ class Order(models.Model):
     cart_subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Subtotal before shipping and discounts")
     status = models.CharField(max_length=20, choices=OrderStatus.choices, default=OrderStatus.PENDING)
     payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
-    shipping_address = models.ForeignKey(Address, on_delete=models.PROTECT, help_text="Required shipping address")
-    shipping_method = models.ForeignKey(ShippingMethod, on_delete=models.PROTECT, help_text="Required shipping method")
-    tracking_number = models.CharField(max_length=100, help_text="Required tracking number for order tracking")
+    
+    # Make shipping fields nullable for safe migration of existing data
+    shipping_address = models.ForeignKey(Address, on_delete=models.PROTECT, null=True, blank=True, help_text="Shipping address")
+    shipping_method = models.ForeignKey(ShippingMethod, on_delete=models.PROTECT, null=True, blank=True, help_text="Shipping method")
+    tracking_number = models.CharField(max_length=100, blank=True, null=True, help_text="Tracking number for order tracking")
     
     # Required customer information fields
     customer_name = models.CharField(max_length=100, help_text="Required customer name")
