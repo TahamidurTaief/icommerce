@@ -10,7 +10,7 @@ from rest_framework_simplejwt.views import (
 
 from products.views import ProductViewSet, CategoryViewSet, SubCategoryViewSet, ColorViewSet, SizeViewSet
 from shops.views import ShopViewSet
-from orders.views import OrderViewSet, ShippingMethodViewSet, OrderPaymentViewSet, ShippingMethodListAPIView
+from orders.views import OrderViewSet, ShippingMethodViewSet, OrderPaymentViewSet, ShippingMethodListAPIView, CouponViewSet, PaymentAccountsAPIView
 from users.views import UserRegistrationView, register_view, RegisterAPIView, CustomTokenObtainPairView
 
 router = DefaultRouter()
@@ -23,11 +23,13 @@ router.register(r'shops', ShopViewSet, basename='shop')
 router.register(r'orders', OrderViewSet, basename='order')
 router.register(r'order-payments', OrderPaymentViewSet, basename='order-payment')
 router.register(r'shipping-methods', ShippingMethodViewSet, basename='shipping-method')
+router.register(r'coupons', CouponViewSet, basename='coupon')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/shipping-methods-list/', ShippingMethodListAPIView.as_view(), name='shipping-methods-list'),
+    path('api/payment/accounts/', PaymentAccountsAPIView.as_view(), name='payment-accounts'),
     
     # JWT Authentication endpoints
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
