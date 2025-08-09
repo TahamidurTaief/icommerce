@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { CheckoutProvider } from '../contexts/CheckoutContext';
-import CheckoutProcess from '../Components/Cart/CheckoutProcess';
+import { CheckoutProvider } from '@/app/contexts/CheckoutContext';
+import CheckoutProcess from '@/app/Components/Cart/CheckoutProcess';
 
 // Demo page with sample cart data for testing
 const CheckoutDemo = () => {

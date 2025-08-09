@@ -1,49 +1,50 @@
-// app/products/[slug]/page.js
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/app/lib/api";
 import ProductDetailPageClient from "@/app/Components/Product/ProductDetailPageClient";
 import { Suspense } from "react";
 import Loading from "./loading";
 
-/**
- * Generates metadata for the page dynamically based on the product.
- * @param {{ params: { slug: string } }} props
- */
-export async function generateMetadata({ params }) {
-  // Await params before accessing its properties
-  const { slug } = await params;
-  const product = await getProductBySlug(slug);
-
-  if (!product || product.error) {
-    return { title: "Product Not Found" };
-  }
-
-  const plainDescription = product.description ? product.description.replace(/<[^>]*>?/gm, '') : '';
-
-  return {
-    title: `${product.name} | ICommerce`,
-    description: plainDescription.substring(0, 160),
-  };
+// Force static generation for all possible product slugs
+export async function generateStaticParams() {
+  return [];
 }
 
-/**
- * The main server component for the product detail page.
- * @param {{ params: { slug: string } }} props
- */
-export default async function ProductDetailPage({ params }) {
-  // Await params before accessing its properties
+// Generate metadata for SEO
+export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  
+  try {
+    const product = await getProductBySlug(slug);
+    if (!product || product.error) {
+      return { title: "Product Not Found" };
+    }
+    const plainDescription = product.description ? product.description.replace(/<[^>]*>?/gm, '') : '';
+    return {
+      title: `${product.name} | ICommerce`,
+      description: plainDescription.substring(0, 160),
+    };
+  } catch (error) {
+    return { title: "Product Not Found" };
+  }
+}
 
-  if (!product || product.error || !product.id) {
+// Main page component
+export default async function ProductDetailPage({ params }) {
+  const { slug } = await params;
+  
+  try {
+    const product = await getProductBySlug(slug);
+    if (!product || product.error || !product.id) {
+      notFound();
+    }
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12 bg-[var(--color-background)] text-foreground min-h-[calc(100vh-126px)] overflow-auto">
+        <Suspense fallback={<Loading />}>
+          <ProductDetailPageClient product={product} />
+        </Suspense>
+      </div>
+    );
+  } catch (error) {
     notFound();
   }
-
-  return (
-    <div className="container mx-auto px-4 py-8 md:py-12 bg-[var(--color-background)] text-foreground min-h-[calc(100vh-126px)] overflow-auto">
-      <Suspense fallback={<Loading />}>
-        <ProductDetailPageClient product={product} />
-      </Suspense>
-    </div>
-  );
 }
