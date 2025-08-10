@@ -35,6 +35,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3001",
     "http://192.168.1.6:3000",
     "http://192.168.1.6:3001",
+    "https://icommerce-beta.vercel.app",
+    "http://icommerce.passmcq.com"
 ]
 
 
