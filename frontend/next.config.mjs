@@ -13,6 +13,13 @@ const nextConfig = {
         port: '8000',
         pathname: '/media/**',
       },
+      // Allow images from production API host
+      {
+        protocol: 'https',
+        hostname: 'icommerce.passmcq.com',
+        port: '',
+        pathname: '/media/**',
+      },
       // This pattern allows placeholder images from placehold.co
       {
         protocol: 'https',

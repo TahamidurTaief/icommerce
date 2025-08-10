@@ -1,7 +1,8 @@
 // app/lib/api.js
 import { cache } from 'react';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+// Normalize API base URL and ensure no trailing slash; default to local http for dev
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
 
 // Debug API calls
 const DEBUG_API = true;
@@ -48,7 +49,8 @@ async function fetchAPI(endpoint, options = {}) {
     ...options.headers 
   };
   
-  const url = `${API_BASE_URL}${endpoint}`;
+  // Ensure endpoint begins with slash
+  const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
   
   if (DEBUG_API) {
     console.log('🌐 API Request:', {

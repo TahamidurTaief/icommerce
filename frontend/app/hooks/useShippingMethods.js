@@ -12,8 +12,8 @@ const useShippingMethods = () => {
       setLoading(true);
       setError(null);
       
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-      const response = await fetch(`${API_BASE_URL}/api/shipping-methods/`);
+  const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
+  const response = await fetch(`${API_BASE_URL}/api/shipping-methods/`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

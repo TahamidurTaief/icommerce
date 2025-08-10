@@ -176,8 +176,8 @@ const OrderPaymentModal = ({
       setLoadingAccounts(true);
       try {
         // Use the correct backend API URL
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-        const response = await fetch(`${API_BASE_URL}/api/payment/accounts/`);
+  const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
+  const response = await fetch(`${API_BASE_URL}/api/payment/accounts/`);
         if (response.ok) {
           const data = await response.json();
           console.log('🏦 Payment accounts loaded:', data);

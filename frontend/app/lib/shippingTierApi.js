@@ -2,14 +2,14 @@
  * Enhanced Shipping API Functions with Tier Support
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
 
 /**
  * Fetch all shipping methods with their pricing tiers
  */
 export const getShippingMethodsWithTiers = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/shipping-methods/`);
+  const response = await fetch(`${API_BASE_URL}/api/shipping-methods/`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -28,7 +28,7 @@ export const getShippingMethodsWithTiers = async () => {
 export const getShippingPriceForQuantity = async (methodId, quantity) => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/shipping-methods/${methodId}/price-for-quantity/?quantity=${quantity}`
+  `${API_BASE_URL}/api/shipping-methods/${methodId}/price-for-quantity/?quantity=${quantity}`
     );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
