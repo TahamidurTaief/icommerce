@@ -51,19 +51,36 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        This view should return a list of all the orders
-        for the currently authenticated user, or all orders for admins.
+        Custom queryset logic:
+        - If 'user' query param is provided, filter by user id (API usage)
+        - If 'order_number' query param is provided, filter by order_number (API usage)
+        - If accessed from web (no query params), show all orders for admin, or all orders for non-admin (for /orders page)
+        - Otherwise, for authenticated users, show only their orders
         """
-        if not self.request.user.is_authenticated:
-            return Order.objects.none()
-            
-        # Check if user is admin
-        if (hasattr(self.request.user, 'user_type') and 
-            self.request.user.user_type == 'ADMIN'):
-            return Order.objects.all().prefetch_related('items', 'updates', 'payment')
-        
-        # For customers, return only their orders
-        return Order.objects.filter(user=self.request.user).prefetch_related('items', 'updates', 'payment')
+        queryset = Order.objects.all().prefetch_related('items', 'updates', 'payment')
+        user_param = self.request.query_params.get('user')
+        order_number_param = self.request.query_params.get('order_number')
+        user = self.request.user
+
+        # API: filter by user id if provided
+        if user_param:
+            queryset = queryset.filter(user__id=user_param)
+        # API: filter by order_number if provided
+        if order_number_param:
+            queryset = queryset.filter(order_number=order_number_param)
+
+        # If no filter params, apply default logic
+        if not user_param and not order_number_param:
+            # If admin, show all orders
+            if user.is_authenticated and hasattr(user, 'user_type') and user.user_type == 'ADMIN':
+                return queryset
+            # If not authenticated, return empty queryset
+            if not user.is_authenticated:
+                return queryset.none()
+            # For customers/sellers, show all orders (for /orders page)
+            return queryset
+
+        return queryset
 
     def create(self, request, *args, **kwargs):
         """

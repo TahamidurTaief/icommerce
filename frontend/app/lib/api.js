@@ -89,7 +89,11 @@ async function fetchAPI(endpoint, options = {}) {
         }
         
         const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-        console.error("Backend Error:", errorData);
+        if (errorData && (Object.keys(errorData).length > 0)) {
+          console.error("Backend Error:", errorData);
+        } else {
+          console.error(`Backend Error: status ${response.status} ${response.statusText} at ${url}`);
+        }
         
         // Handle 401 Unauthorized responses
         if (response.status === 401) {
@@ -428,7 +432,10 @@ export const validateCoupon = async (couponCode, cartItems, cartTotal = null, us
 };
 
 // Order fetches (requires authentication)
-export const getUserOrders = async () => fetchAPI('/api/orders/');
+export const getUserOrders = async (userId) => {
+  if (!userId) return [];
+  return fetchAPI(`/api/orders/?user=${userId}`);
+};
 export const getOrderDetails = async (orderNumber) => fetchAPI(`/api/orders/${orderNumber}/`);
 
 // Order creation with payment info

@@ -1,2 +1,302 @@
 INFO 2025-08-09 12:34:20,397 autoreload 3592 6096 Watching for file changes with StatReloader
 INFO 2025-08-09 19:51:41,399 autoreload 17112 17332 Watching for file changes with StatReloader
+INFO 2025-08-12 21:33:46,035 autoreload 14496 120 Watching for file changes with StatReloader
+INFO 2025-08-12 21:39:44,951 autoreload 7488 15728 Watching for file changes with StatReloader
+INFO 2025-08-12 21:49:14,875 views 7488 15256 ProductViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-12 21:49:16,448 views 7488 15256 Successfully paginated 10 products
+INFO 2025-08-12 21:49:16,669 basehttp 7488 13744 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-08-12 21:49:17,816 basehttp 7488 13744 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 10906
+INFO 2025-08-12 21:49:18,075 basehttp 7488 13744 "GET /static/unfold/fonts/inter/styles.css HTTP/1.1" 304 0
+INFO 2025-08-12 21:49:18,126 basehttp 7488 15256 "GET /api/products/ HTTP/1.1" 200 40486
+INFO 2025-08-12 21:49:18,140 basehttp 7488 13240 "GET /static/unfold/css/styles.css HTTP/1.1" 304 0
+INFO 2025-08-12 21:49:18,231 basehttp 7488 15532 "GET /static/unfold/fonts/material-symbols/styles.css HTTP/1.1" 304 0
+INFO 2025-08-12 21:49:18,776 basehttp 7488 15256 "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 200 3426
+INFO 2025-08-12 21:49:18,896 basehttp 7488 13744 "GET /static/rest_framework/css/default.css HTTP/1.1" 200 1152
+INFO 2025-08-12 21:49:18,998 basehttp 7488 15256 "GET /static/rest_framework/js/csrf.js HTTP/1.1" 200 1793
+INFO 2025-08-12 21:49:19,160 basehttp 7488 13240 "GET /static/rest_framework/css/prettify.css HTTP/1.1" 200 817
+INFO 2025-08-12 21:49:19,252 basehttp 7488 14932 "GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 200 3796
+INFO 2025-08-12 21:49:19,255 basehttp 7488 17168 "GET /static/rest_framework/js/jquery-3.7.1.min.js HTTP/1.1" 200 87533
+INFO 2025-08-12 21:49:19,346 basehttp 7488 13744 "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 200 39680
+INFO 2025-08-12 21:49:19,396 basehttp 7488 15532 "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 200 121457
+INFO 2025-08-12 21:49:19,409 basehttp 7488 15256 "GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 200 13632
+INFO 2025-08-12 21:49:19,484 basehttp 7488 13240 "GET /static/rest_framework/js/default.js HTTP/1.1" 200 1268
+INFO 2025-08-12 21:49:19,566 basehttp 7488 14932 "GET /static/rest_framework/js/load-ajax-form.js HTTP/1.1" 200 59
+INFO 2025-08-12 21:49:21,484 basehttp 7488 14932 "GET /static/rest_framework/img/grid.png HTTP/1.1" 200 1458
+INFO 2025-08-12 21:49:24,243 basehttp 7488 14932 "GET /static/rest_framework/fonts/glyphicons-halflings-regular.woff2 HTTP/1.1" 200 18028
+WARNING 2025-08-12 21:49:26,975 log 7488 14932 Not Found: /favicon.ico
+WARNING 2025-08-12 21:49:26,980 basehttp 7488 14932 "GET /favicon.ico HTTP/1.1" 404 3947
+INFO 2025-08-12 21:51:31,841 basehttp 7488 14932 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-08-12 21:51:31,916 basehttp 7488 14932 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 10906
+INFO 2025-08-12 21:51:32,228 basehttp 7488 14932 "GET /static/unfold/css/simplebar/simplebar.css HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,330 basehttp 7488 14932 "GET /static/unfold/js/htmx/htmx.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,330 basehttp 7488 13240 "GET /static/unfold/js/chart/chart.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,356 basehttp 7488 14932 "GET /static/unfold/js/simplebar/simplebar.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,358 basehttp 7488 13240 "GET /static/unfold/js/app.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,391 basehttp 7488 14932 "GET /static/unfold/js/alpine/alpine.sort.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,391 basehttp 7488 15532 "GET /static/unfold/js/alpine/alpine.anchor.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,391 basehttp 7488 13240 "GET /static/unfold/js/alpine/alpine.persist.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,411 basehttp 7488 15532 "GET /static/unfold/js/alpine/alpine.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,421 basehttp 7488 13240 "GET /static/unfold/js/alpine/alpine.resize.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,550 basehttp 7488 13240 "GET /static/unfold/fonts/inter/Inter-SemiBold.woff2 HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,550 basehttp 7488 15532 "GET /static/unfold/fonts/inter/Inter-Medium.woff2 HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,550 basehttp 7488 14932 "GET /static/unfold/fonts/material-symbols/Material-Symbols-Outlined.woff2 HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:32,622 basehttp 7488 14932 "GET /static/unfold/fonts/inter/Inter-Regular.woff2 HTTP/1.1" 304 0
+INFO 2025-08-12 21:51:40,652 basehttp 7488 14932 "POST /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2025-08-12 21:51:40,898 basehttp 7488 14932 "GET /admin/ HTTP/1.1" 200 64339
+INFO 2025-08-12 21:53:07,841 basehttp 7488 14932 "GET /admin/orders/order/ HTTP/1.1" 200 95017
+INFO 2025-08-12 21:53:07,986 basehttp 7488 13240 "GET /static/admin/js/core.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:53:07,989 basehttp 7488 14932 "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:53:07,989 basehttp 7488 17168 "GET /static/admin/js/prepopulate.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:53:07,991 basehttp 7488 13744 "GET /static/admin/js/urlify.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:53:07,996 basehttp 7488 15532 "GET /static/admin/js/jquery.init.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:53:08,001 basehttp 7488 15256 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-08-12 21:53:08,006 basehttp 7488 13240 "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:53:08,011 basehttp 7488 14932 "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:53:08,016 basehttp 7488 17168 "GET /static/admin/js/actions.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:53:18,771 basehttp 7488 15256 "GET /admin/ HTTP/1.1" 200 64339
+INFO 2025-08-12 21:53:20,653 views 7488 15256 ProductViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-12 21:53:20,917 views 7488 15256 Successfully paginated 10 products
+INFO 2025-08-12 21:53:21,469 basehttp 7488 15256 "GET /api/products/ HTTP/1.1" 200 45456
+INFO 2025-08-12 21:53:24,318 basehttp 7488 15256 "GET /api/ HTTP/1.1" 200 6601
+INFO 2025-08-12 21:53:28,130 basehttp 7488 15256 "GET /api/orders/ HTTP/1.1" 200 36976
+INFO 2025-08-12 21:53:52,961 basehttp 7488 15256 "POST /admin/orders/order/ HTTP/1.1" 200 38685
+INFO 2025-08-12 21:53:53,191 basehttp 7488 15256 "GET /static/admin/js/cancel.js HTTP/1.1" 304 0
+INFO 2025-08-12 21:53:55,206 basehttp 7488 15256 "POST /admin/orders/order/ HTTP/1.1" 302 0
+INFO 2025-08-12 21:53:55,351 basehttp 7488 15256 "GET /admin/orders/order/ HTTP/1.1" 200 67440
+INFO 2025-08-12 21:53:55,441 basehttp 7488 15256 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-08-12 21:54:00,791 basehttp 7488 15256 "GET /api/orders/ HTTP/1.1" 200 28685
+INFO 2025-08-12 21:55:54,484 views 7488 5320 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12']}>
+INFO 2025-08-12 21:55:56,545 views 7488 5320 Successfully paginated 12 products
+INFO 2025-08-12 21:55:57,015 basehttp 7488 5320 "GET /api/products/?page_size=12 HTTP/1.1" 200 19132
+INFO 2025-08-12 21:55:57,479 views 7488 16444 CategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-12 21:55:57,585 views 7488 16444 Successfully returned 4 categories
+INFO 2025-08-12 21:55:57,656 basehttp 7488 16444 "GET /api/categories/ HTTP/1.1" 200 7778
+INFO 2025-08-12 21:57:22,940 basehttp 7488 8640 "OPTIONS /api/orders/ HTTP/1.1" 200 0
+INFO 2025-08-12 21:57:22,945 basehttp 7488 14836 "OPTIONS /api/orders/ HTTP/1.1" 200 0
+WARNING 2025-08-12 21:57:23,255 log 7488 8640 Unauthorized: /api/orders/
+WARNING 2025-08-12 21:57:23,258 log 7488 14836 Unauthorized: /api/orders/
+WARNING 2025-08-12 21:57:23,260 basehttp 7488 8640 "GET /api/orders/ HTTP/1.1" 401 183
+WARNING 2025-08-12 21:57:23,268 basehttp 7488 14836 "GET /api/orders/ HTTP/1.1" 401 183
+INFO 2025-08-12 22:47:29,692 views 7488 15500 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12']}>
+INFO 2025-08-12 22:47:30,067 views 7488 15500 Successfully paginated 12 products
+INFO 2025-08-12 22:47:30,329 basehttp 7488 15500 "GET /api/products/?page_size=12 HTTP/1.1" 200 19132
+INFO 2025-08-12 22:47:30,671 views 7488 5944 CategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-12 22:47:30,769 views 7488 5944 Successfully returned 4 categories
+INFO 2025-08-12 22:47:30,778 basehttp 7488 5944 "GET /api/categories/ HTTP/1.1" 200 7778
+INFO 2025-08-12 22:48:08,497 basehttp 7488 332 "OPTIONS /api/orders/ HTTP/1.1" 200 0
+WARNING 2025-08-12 22:48:08,860 log 7488 332 Unauthorized: /api/orders/
+INFO 2025-08-12 22:48:08,861 basehttp 7488 5852 "OPTIONS /api/orders/ HTTP/1.1" 200 0
+WARNING 2025-08-12 22:48:08,912 basehttp 7488 332 "GET /api/orders/ HTTP/1.1" 401 183
+WARNING 2025-08-12 22:48:08,943 log 7488 5852 Unauthorized: /api/orders/
+WARNING 2025-08-12 22:48:08,946 basehttp 7488 5852 "GET /api/orders/ HTTP/1.1" 401 183
+INFO 2025-08-12 23:07:39,185 basehttp 7488 7280 "OPTIONS /api/token/ HTTP/1.1" 200 0
+INFO 2025-08-12 23:07:41,183 basehttp 7488 7280 "POST /api/token/ HTTP/1.1" 200 902
+INFO 2025-08-12 23:07:44,816 basehttp 7488 7280 "OPTIONS /api/orders/ HTTP/1.1" 200 0
+INFO 2025-08-12 23:07:45,367 basehttp 7488 7280 "GET /api/orders/ HTTP/1.1" 200 944
+INFO 2025-08-12 23:07:46,014 views 7488 17188 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12']}>
+INFO 2025-08-12 23:07:46,255 views 7488 17188 Successfully paginated 12 products
+INFO 2025-08-12 23:07:46,590 basehttp 7488 17188 "GET /api/products/?page_size=12 HTTP/1.1" 200 19132
+INFO 2025-08-12 23:07:47,243 views 7488 17012 CategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-12 23:07:47,339 views 7488 17012 Successfully returned 4 categories
+INFO 2025-08-12 23:07:47,343 basehttp 7488 17012 "GET /api/categories/ HTTP/1.1" 200 7778
+INFO 2025-08-12 23:07:52,475 basehttp 7488 7280 "OPTIONS /api/orders/ HTTP/1.1" 200 0
+INFO 2025-08-12 23:07:52,481 basehttp 7488 7280 "OPTIONS /api/orders/ HTTP/1.1" 200 0
+INFO 2025-08-12 23:07:52,550 basehttp 7488 7280 "GET /api/orders/ HTTP/1.1" 200 944
+INFO 2025-08-12 23:07:52,579 basehttp 7488 13204 "GET /api/orders/ HTTP/1.1" 200 944
+INFO 2025-08-13 09:08:16,550 basehttp 7488 9464 "OPTIONS /api/colors/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:08:16,562 basehttp 7488 7444 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:08:16,603 basehttp 7488 9464 "OPTIONS /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 0
+INFO 2025-08-13 09:08:16,607 basehttp 7488 7444 "OPTIONS /api/colors/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:08:16,629 basehttp 7488 12124 "OPTIONS /api/shops/ HTTP/1.1" 200 0
+WARNING 2025-08-13 09:08:16,859 log 7488 12124 Unauthorized: /api/products/
+WARNING 2025-08-13 09:08:16,864 log 7488 9464 Unauthorized: /api/categories/
+WARNING 2025-08-13 09:08:16,865 log 7488 7444 Unauthorized: /api/colors/
+INFO 2025-08-13 09:08:16,867 basehttp 7488 15800 "OPTIONS /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 0
+INFO 2025-08-13 09:08:16,868 basehttp 7488 1180 "OPTIONS /api/shops/ HTTP/1.1" 200 0
+WARNING 2025-08-13 09:08:16,868 basehttp 7488 12124 "GET /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 401 183
+WARNING 2025-08-13 09:08:16,913 basehttp 7488 9464 "GET /api/categories/ HTTP/1.1" 401 183
+INFO 2025-08-13 09:08:16,917 basehttp 7488 11160 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+WARNING 2025-08-13 09:08:16,924 basehttp 7488 7444 "GET /api/colors/ HTTP/1.1" 401 183
+WARNING 2025-08-13 09:08:16,938 log 7488 15800 Unauthorized: /api/colors/
+WARNING 2025-08-13 09:08:17,056 basehttp 7488 15800 "GET /api/colors/ HTTP/1.1" 401 183
+WARNING 2025-08-13 09:08:16,977 log 7488 12124 Unauthorized: /api/products/
+WARNING 2025-08-13 09:08:17,040 log 7488 9464 Unauthorized: /api/shops/
+WARNING 2025-08-13 09:08:17,051 log 7488 7444 Unauthorized: /api/categories/
+WARNING 2025-08-13 09:08:16,964 log 7488 1180 Unauthorized: /api/shops/
+WARNING 2025-08-13 09:08:17,111 basehttp 7488 12124 "GET /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 401 183
+WARNING 2025-08-13 09:08:17,121 basehttp 7488 9464 "GET /api/shops/ HTTP/1.1" 401 183
+WARNING 2025-08-13 09:08:17,124 basehttp 7488 7444 "GET /api/categories/ HTTP/1.1" 401 183
+WARNING 2025-08-13 09:08:17,127 basehttp 7488 1180 "GET /api/shops/ HTTP/1.1" 401 183
+INFO 2025-08-13 09:09:06,571 autoreload 6924 11588 Watching for file changes with StatReloader
+INFO 2025-08-13 09:09:36,465 basehttp 6924 11160 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:09:36,476 basehttp 6924 15728 "OPTIONS /api/shops/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:09:36,488 views 6924 11160 CategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:09:36,495 views 6924 15728 ShopViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:09:36,499 basehttp 6924 7488 "OPTIONS /api/colors/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:09:36,537 views 6924 7488 ColorViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:09:36,560 views 6924 15728 Successfully paginated 20 shops
+INFO 2025-08-13 09:09:36,571 views 6924 7488 Successfully returned 4 colors
+INFO 2025-08-13 09:09:36,586 basehttp 6924 13420 "OPTIONS /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 0
+INFO 2025-08-13 09:09:36,608 views 6924 11160 Successfully returned 4 categories
+INFO 2025-08-13 09:09:36,674 basehttp 6924 7488 "GET /api/colors/ HTTP/1.1" 200 780
+INFO 2025-08-13 09:09:36,690 views 6924 13420 ProductViewSet.list called with params: <QueryDict: {'page': ['1'], 'min_price': ['0'], 'max_price': ['1000']}>
+INFO 2025-08-13 09:09:36,690 basehttp 6924 15728 "GET /api/shops/ HTTP/1.1" 200 7671
+INFO 2025-08-13 09:09:36,703 basehttp 6924 11160 "GET /api/categories/ HTTP/1.1" 200 7778
+INFO 2025-08-13 09:09:36,800 views 6924 13420 Successfully paginated 10 products
+INFO 2025-08-13 09:09:36,972 basehttp 6924 13420 "GET /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 15920
+INFO 2025-08-13 09:09:56,425 views 6924 15624 ProductViewSet.retrieve called with slug: function-based-user-facing-frame
+INFO 2025-08-13 09:09:56,467 views 6924 15624 Successfully retrieved product: Function-based user-facing frame
+INFO 2025-08-13 09:09:56,518 basehttp 6924 15624 "GET /api/products/function-based-user-facing-frame/ HTTP/1.1" 200 1711
+INFO 2025-08-13 09:09:57,006 views 6924 14736 ProductViewSet.retrieve called with slug: function-based-user-facing-frame
+INFO 2025-08-13 09:09:57,081 views 6924 14736 Successfully retrieved product: Function-based user-facing frame
+INFO 2025-08-13 09:09:57,118 basehttp 6924 14736 "GET /api/products/function-based-user-facing-frame/ HTTP/1.1" 200 1711
+INFO 2025-08-13 09:10:31,905 basehttp 6924 13420 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:31,908 basehttp 6924 7488 "OPTIONS /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:31,917 basehttp 6924 11160 "OPTIONS /api/shops/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:31,917 basehttp 6924 15728 "OPTIONS /api/colors/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:31,938 basehttp 6924 13420 "OPTIONS /api/colors/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:31,948 basehttp 6924 7488 "OPTIONS /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:31,967 basehttp 6924 7316 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:32,027 views 6924 11160 ProductViewSet.list called with params: <QueryDict: {'page': ['1'], 'min_price': ['0'], 'max_price': ['1000']}>
+INFO 2025-08-13 09:10:32,033 views 6924 15728 CategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:32,036 basehttp 6924 13004 "OPTIONS /api/shops/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:32,041 views 6924 13420 ColorViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:32,049 views 6924 7488 ShopViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:32,055 views 6924 7316 ColorViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:32,100 views 6924 13004 ProductViewSet.list called with params: <QueryDict: {'page': ['1'], 'min_price': ['0'], 'max_price': ['1000']}>
+INFO 2025-08-13 09:10:32,123 views 6924 13420 Successfully returned 4 colors
+INFO 2025-08-13 09:10:32,215 basehttp 6924 13420 "GET /api/colors/ HTTP/1.1" 200 780
+INFO 2025-08-13 09:10:32,250 views 6924 13420 CategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:32,272 views 6924 7488 Successfully paginated 20 shops
+INFO 2025-08-13 09:10:32,340 views 6924 7316 Successfully returned 4 colors
+INFO 2025-08-13 09:10:32,350 views 6924 11160 Successfully paginated 10 products
+INFO 2025-08-13 09:10:32,454 views 6924 13004 Successfully paginated 10 products
+INFO 2025-08-13 09:10:32,457 basehttp 6924 7316 "GET /api/colors/ HTTP/1.1" 200 780
+INFO 2025-08-13 09:10:32,496 views 6924 15728 Successfully returned 4 categories
+INFO 2025-08-13 09:10:32,641 views 6924 7316 ShopViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:32,686 basehttp 6924 15728 "GET /api/categories/ HTTP/1.1" 200 7778
+INFO 2025-08-13 09:10:32,752 views 6924 7316 Successfully paginated 20 shops
+INFO 2025-08-13 09:10:32,754 views 6924 13420 Successfully returned 4 categories
+INFO 2025-08-13 09:10:32,821 basehttp 6924 13420 "GET /api/categories/ HTTP/1.1" 200 7778
+INFO 2025-08-13 09:10:32,892 basehttp 6924 7488 "GET /api/shops/ HTTP/1.1" 200 7671
+INFO 2025-08-13 09:10:33,039 basehttp 6924 11160 "GET /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 15920
+INFO 2025-08-13 09:10:33,054 basehttp 6924 13004 "GET /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 15920
+INFO 2025-08-13 09:10:33,055 basehttp 6924 7316 "GET /api/shops/ HTTP/1.1" 200 7671
+INFO 2025-08-13 09:10:36,018 views 6924 10608 ProductViewSet.retrieve called with slug: organic-analyzing-secured-line
+INFO 2025-08-13 09:10:36,043 views 6924 10608 Successfully retrieved product: Organic analyzing secured line
+INFO 2025-08-13 09:10:36,070 basehttp 6924 10608 "GET /api/products/organic-analyzing-secured-line/ HTTP/1.1" 200 1525
+INFO 2025-08-13 09:10:42,171 basehttp 6924 7316 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:42,178 basehttp 6924 13004 "OPTIONS /api/shops/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:42,181 basehttp 6924 11160 "OPTIONS /api/colors/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:42,182 basehttp 6924 7488 "OPTIONS /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:42,182 basehttp 6924 15728 "OPTIONS /api/shops/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:42,182 basehttp 6924 13420 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:42,192 basehttp 6924 7316 "OPTIONS /api/colors/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:42,204 basehttp 6924 13004 "OPTIONS /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 0
+INFO 2025-08-13 09:10:42,208 views 6924 11160 CategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:42,210 views 6924 7488 ShopViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:42,214 views 6924 13420 ProductViewSet.list called with params: <QueryDict: {'page': ['1'], 'min_price': ['0'], 'max_price': ['1000']}>
+INFO 2025-08-13 09:10:42,216 views 6924 15728 ColorViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:42,220 views 6924 7316 ShopViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:42,222 views 6924 13004 CategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:42,275 views 6924 13420 Successfully paginated 10 products
+INFO 2025-08-13 09:10:42,278 views 6924 7488 Successfully paginated 20 shops
+INFO 2025-08-13 09:10:42,288 views 6924 15728 Successfully returned 4 colors
+INFO 2025-08-13 09:10:42,356 views 6924 11160 Successfully returned 4 categories
+INFO 2025-08-13 09:10:42,363 views 6924 7316 Successfully paginated 20 shops
+INFO 2025-08-13 09:10:42,398 basehttp 6924 15728 "GET /api/colors/ HTTP/1.1" 200 780
+INFO 2025-08-13 09:10:42,509 basehttp 6924 11160 "GET /api/categories/ HTTP/1.1" 200 7778
+INFO 2025-08-13 09:10:42,572 views 6924 13004 Successfully returned 4 categories
+INFO 2025-08-13 09:10:42,600 views 6924 15728 ColorViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:10:42,613 views 6924 11160 ProductViewSet.list called with params: <QueryDict: {'page': ['1'], 'min_price': ['0'], 'max_price': ['1000']}>
+INFO 2025-08-13 09:10:42,626 basehttp 6924 13004 "GET /api/categories/ HTTP/1.1" 200 7778
+INFO 2025-08-13 09:10:42,698 basehttp 6924 7488 "GET /api/shops/ HTTP/1.1" 200 7671
+INFO 2025-08-13 09:10:42,706 views 6924 15728 Successfully returned 4 colors
+INFO 2025-08-13 09:10:42,891 basehttp 6924 15728 "GET /api/colors/ HTTP/1.1" 200 780
+INFO 2025-08-13 09:10:42,948 basehttp 6924 7316 "GET /api/shops/ HTTP/1.1" 200 7671
+INFO 2025-08-13 09:10:42,956 views 6924 11160 Successfully paginated 10 products
+INFO 2025-08-13 09:10:43,027 basehttp 6924 13420 "GET /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 15920
+INFO 2025-08-13 09:10:43,176 basehttp 6924 11160 "GET /api/products/?page=1&min_price=0&max_price=1000 HTTP/1.1" 200 15920
+INFO 2025-08-13 09:10:45,976 views 6924 16848 ProductViewSet.retrieve called with slug: innovative-24hour-superstructure
+INFO 2025-08-13 09:10:46,001 views 6924 16848 Successfully retrieved product: Innovative 24hour superstructure
+INFO 2025-08-13 09:10:46,066 basehttp 6924 16848 "GET /api/products/innovative-24hour-superstructure/ HTTP/1.1" 200 1642
+INFO 2025-08-13 09:11:41,913 basehttp 6924 11848 "GET /api/coupons HTTP/1.1" 301 0
+INFO 2025-08-13 09:11:43,058 basehttp 6924 7028 "GET /api/coupons/ HTTP/1.1" 200 14138
+WARNING 2025-08-13 09:11:44,763 log 6924 7028 Not Found: /favicon.ico
+WARNING 2025-08-13 09:11:44,765 basehttp 6924 7028 "GET /favicon.ico HTTP/1.1" 404 3947
+INFO 2025-08-13 09:12:08,030 basehttp 6924 11160 "OPTIONS /api/coupons/validate/ HTTP/1.1" 200 0
+WARNING 2025-08-13 09:12:08,037 log 6924 11160 Bad Request: /api/coupons/validate/
+WARNING 2025-08-13 09:12:08,038 basehttp 6924 11160 "POST /api/coupons/validate/ HTTP/1.1" 400 73
+INFO 2025-08-13 09:12:38,382 basehttp 6924 11160 "OPTIONS /api/coupons/validate/ HTTP/1.1" 200 0
+WARNING 2025-08-13 09:12:38,388 log 6924 11160 Bad Request: /api/coupons/validate/
+WARNING 2025-08-13 09:12:38,389 basehttp 6924 11160 "POST /api/coupons/validate/ HTTP/1.1" 400 73
+INFO 2025-08-13 09:12:55,174 basehttp 6924 11160 "OPTIONS /api/coupons/validate/ HTTP/1.1" 200 0
+WARNING 2025-08-13 09:12:55,180 log 6924 11160 Bad Request: /api/coupons/validate/
+WARNING 2025-08-13 09:12:55,181 basehttp 6924 11160 "POST /api/coupons/validate/ HTTP/1.1" 400 73
+INFO 2025-08-13 09:13:06,496 basehttp 6924 7028 "GET /admin/orders/coupon/ HTTP/1.1" 200 131905
+INFO 2025-08-13 09:13:06,701 basehttp 6924 7028 "GET /static/unfold/fonts/inter/styles.css HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:06,735 basehttp 6924 7028 "GET /static/unfold/fonts/material-symbols/styles.css HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:06,747 basehttp 6924 12832 "GET /static/unfold/css/styles.css HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:06,764 basehttp 6924 11880 "GET /static/unfold/css/simplebar/simplebar.css HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:06,771 basehttp 6924 13224 "GET /static/unfold/js/app.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:06,780 basehttp 6924 3612 "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:06,786 basehttp 6924 11880 "GET /static/unfold/js/htmx/htmx.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:06,790 basehttp 6924 12832 "GET /static/unfold/js/simplebar/simplebar.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:06,796 basehttp 6924 7028 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-08-13 09:13:06,814 basehttp 6924 13224 "GET /static/unfold/js/chart/chart.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:06,951 basehttp 6924 13224 "GET /static/unfold/js/alpine/alpine.anchor.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:06,951 basehttp 6924 7028 "GET /static/unfold/js/alpine/alpine.persist.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:07,023 basehttp 6924 7028 "GET /static/unfold/js/alpine/alpine.resize.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:07,024 basehttp 6924 13224 "GET /static/unfold/js/alpine/alpine.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:07,025 basehttp 6924 12832 "GET /static/unfold/js/alpine/alpine.sort.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:07,412 basehttp 6924 7028 "GET /static/unfold/fonts/inter/Inter-Medium.woff2 HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:07,412 basehttp 6924 13224 "GET /static/unfold/fonts/inter/Inter-SemiBold.woff2 HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:07,412 basehttp 6924 12832 "GET /static/unfold/fonts/material-symbols/Material-Symbols-Outlined.woff2 HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:07,415 basehttp 6924 11880 "GET /static/unfold/fonts/inter/Inter-Regular.woff2 HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:31,455 basehttp 6924 11160 "OPTIONS /api/coupons/validate/ HTTP/1.1" 200 0
+WARNING 2025-08-13 09:13:31,462 log 6924 11160 Bad Request: /api/coupons/validate/
+WARNING 2025-08-13 09:13:31,465 basehttp 6924 11160 "POST /api/coupons/validate/ HTTP/1.1" 400 73
+INFO 2025-08-13 09:13:48,618 basehttp 6924 11160 "OPTIONS /api/coupons/validate/ HTTP/1.1" 200 0
+WARNING 2025-08-13 09:13:48,625 log 6924 11160 Bad Request: /api/coupons/validate/
+WARNING 2025-08-13 09:13:48,626 basehttp 6924 11160 "POST /api/coupons/validate/ HTTP/1.1" 400 73
+INFO 2025-08-13 09:13:59,548 basehttp 6924 11880 "GET /admin/orders/coupon/16/change/ HTTP/1.1" 200 63987
+INFO 2025-08-13 09:13:59,678 basehttp 6924 3612 "GET /static/admin/js/admin/DateTimeShortcuts.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:59,678 basehttp 6924 7028 "GET /static/admin/js/calendar.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:59,679 basehttp 6924 13224 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-08-13 09:13:59,698 basehttp 6924 2952 "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:13:59,902 basehttp 6924 12832 "GET /static/admin/js/SelectFilter2.js HTTP/1.1" 200 15845
+INFO 2025-08-13 09:13:59,905 basehttp 6924 11880 "GET /static/admin/js/SelectBox.js HTTP/1.1" 200 4530
+INFO 2025-08-13 09:13:59,955 basehttp 6924 11880 "GET /static/admin/js/change_form.js HTTP/1.1" 304 0
+INFO 2025-08-13 09:20:28,304 basehttp 6924 13576 "OPTIONS /api/shipping-methods/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:20:28,378 basehttp 6924 8708 "OPTIONS /api/coupons/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:20:28,428 basehttp 6924 8708 "GET /api/coupons/ HTTP/1.1" 200 3832
+INFO 2025-08-13 09:20:28,442 basehttp 6924 12256 "OPTIONS /api/shipping-methods/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:20:28,532 basehttp 6924 12440 "OPTIONS /api/coupons/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:20:28,640 basehttp 6924 12440 "GET /api/coupons/ HTTP/1.1" 200 3832
+INFO 2025-08-13 09:20:28,788 basehttp 6924 13576 "GET /api/shipping-methods/ HTTP/1.1" 200 3203
+INFO 2025-08-13 09:20:28,838 basehttp 6924 12256 "GET /api/shipping-methods/ HTTP/1.1" 200 3203
+INFO 2025-08-13 09:21:04,099 basehttp 6924 12256 "OPTIONS /api/coupons/validate/ HTTP/1.1" 200 0
+WARNING 2025-08-13 09:21:04,104 log 6924 12256 Bad Request: /api/coupons/validate/
+WARNING 2025-08-13 09:21:04,106 basehttp 6924 12256 "POST /api/coupons/validate/ HTTP/1.1" 400 73
+INFO 2025-08-13 09:22:27,162 basehttp 6924 12256 "OPTIONS /api/token/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:22:28,738 basehttp 6924 12256 "POST /api/token/ HTTP/1.1" 200 902
+INFO 2025-08-13 09:22:30,770 basehttp 6924 12256 "OPTIONS /api/orders/?user=23 HTTP/1.1" 200 0
+INFO 2025-08-13 09:22:30,992 basehttp 6924 12256 "GET /api/orders/?user=23 HTTP/1.1" 200 944
+INFO 2025-08-13 09:22:38,512 views 6924 13488 ProductViewSet.list called with params: <QueryDict: {'page_size': ['12']}>
+INFO 2025-08-13 09:22:38,578 views 6924 13488 Successfully paginated 12 products
+INFO 2025-08-13 09:22:38,692 basehttp 6924 8708 "OPTIONS /api/coupons/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:22:38,693 basehttp 6924 12256 "OPTIONS /api/shipping-methods/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:22:38,693 basehttp 6924 12440 "OPTIONS /api/shipping-methods/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:22:38,693 basehttp 6924 13576 "OPTIONS /api/coupons/ HTTP/1.1" 200 0
+INFO 2025-08-13 09:22:38,786 basehttp 6924 13576 "GET /api/coupons/ HTTP/1.1" 200 3832
+INFO 2025-08-13 09:22:38,788 basehttp 6924 12440 "GET /api/coupons/ HTTP/1.1" 200 3832
+INFO 2025-08-13 09:22:39,009 basehttp 6924 13488 "GET /api/products/?page_size=12 HTTP/1.1" 200 19132
+INFO 2025-08-13 09:22:39,169 basehttp 6924 12256 "GET /api/shipping-methods/ HTTP/1.1" 200 3203
+INFO 2025-08-13 09:22:39,176 views 6924 16724 CategoryViewSet.list called with params: <QueryDict: {}>
+INFO 2025-08-13 09:22:39,180 basehttp 6924 8708 "GET /api/shipping-methods/ HTTP/1.1" 200 3203
+INFO 2025-08-13 09:22:39,234 views 6924 16724 Successfully returned 4 categories
+INFO 2025-08-13 09:22:39,237 basehttp 6924 16724 "GET /api/categories/ HTTP/1.1" 200 7778
+INFO 2025-08-13 09:23:25,532 basehttp 6924 8708 "OPTIONS /api/orders/?user=23 HTTP/1.1" 200 0
+INFO 2025-08-13 09:23:25,544 basehttp 6924 12256 "OPTIONS /api/orders/?user=23 HTTP/1.1" 200 0
+INFO 2025-08-13 09:23:25,668 basehttp 6924 8708 "GET /api/orders/?user=23 HTTP/1.1" 200 944
+INFO 2025-08-13 09:23:25,675 basehttp 6924 12256 "GET /api/orders/?user=23 HTTP/1.1" 200 944
